@@ -14274,6 +14274,2043 @@ const displayResult = pipe(
 );
 ```
 
+#### D. State & Encapsulation Utilities
+
+These functions use closures to maintain private state, providing encapsulation and data hiding capabilities.
+
+##### 1. counter(initial) - Stateful Counter
+
+```javascript
+/**
+ * Creates a counter with private state.
+ * Demonstrates data encapsulation through closures.
+ * 
+ * Use cases:
+ * - ID generation
+ * - Statistics tracking
+ * - State management
+ */
+function counter(initial = 0) {
+  let count = initial;
+  
+  return {
+    increment: (by = 1) => {
+      count += by;
+      return count;
+    },
+    decrement: (by = 1) => {
+      count -= by;
+      return count;
+    },
+    get: () => count,
+    reset: () => {
+      count = initial;
+      return count;
+    },
+    set: (value) => {
+      count = value;
+      return count;
+    }
+  };
+}
+
+// Example 1: Page view counter
+const pageViews = counter(0);
+
+// Track page views
+window.addEventListener('load', () => {
+  const views = pageViews.increment();
+  console.log(`Page views: ${views}`);
+});
+
+// Example 2: Like counter with persistence
+function createLikeCounter(postId, initialCount = 0) {
+  const likeCtr = counter(initialCount);
+  
+  return {
+    like: async () => {
+      const newCount = likeCtr.increment();
+      await fetch(`/api/posts/${postId}/like`, { method: 'POST' });
+      updateUI(newCount);
+      return newCount;
+    },
+    unlike: async () => {
+      const newCount = likeCtr.decrement();
+      await fetch(`/api/posts/${postId}/unlike`, { method: 'POST' });
+      updateUI(newCount);
+      return newCount;
+    },
+    getCount: () => likeCtr.get()
+  };
+}
+
+// Example 3: Statistics tracker
+function createStatsTracker() {
+  const errors = counter(0);
+  const successes = counter(0);
+  const total = counter(0);
+  
+  return {
+    recordSuccess: () => {
+      successes.increment();
+      total.increment();
+    },
+    recordError: () => {
+      errors.increment();
+      total.increment();
+    },
+    getStats: () => ({
+      errors: errors.get(),
+      successes: successes.get(),
+      total: total.get(),
+      successRate: (successes.get() / total.get() * 100).toFixed(2) + '%'
+    }),
+    reset: () => {
+      errors.reset();
+      successes.reset();
+      total.reset();
+    }
+  };
+}
+
+const apiStats = createStatsTracker();
+
+async function makeAPICall(endpoint) {
+  try {
+    const response = await fetch(endpoint);
+    if (response.ok) {
+      apiStats.recordSuccess();
+    } else {
+      apiStats.recordError();
+    }
+    return response;
+  } catch (error) {
+    apiStats.recordError();
+    throw error;
+  }
+}
+
+console.log(apiStats.getStats());  // { errors: 0, successes: 5, total: 5, successRate: '100.00%' }
+```
+
+##### 2. toggle(...states) - State Cycler
+
+```javascript
+/**
+ * Creates a function that cycles through multiple states.
+ * Each call returns the next state in the sequence.
+ * 
+ * Use cases:
+ * - Theme switching
+ * - View mode toggling
+ * - Carousel/slideshow navigation
+ */
+function toggle(...states) {
+  let index = 0;
+  
+  return function() {
+    const current = states[index];
+    index = (index + 1) % states.length;
+    return current;
+  };
+}
+
+// Example 1: Theme toggler
+const themeToggle = toggle('light', 'dark', 'auto');
+
+button.addEventListener('click', () => {
+  const theme = themeToggle();
+  document.body.className = `theme-${theme}`;
+  console.log(`Theme changed to: ${theme}`);
+});
+
+// Example 2: View mode toggle
+const viewModeToggle = toggle('grid', 'list', 'compact');
+
+viewButton.addEventListener('click', () => {
+  const mode = viewModeToggle();
+  gallery.className = `view-${mode}`;
+  localStorage.setItem('viewMode', mode);
+});
+
+// Example 3: Sort order toggle
+const sortToggle = toggle('asc', 'desc');
+
+function sortTable(column) {
+  const order = sortToggle();
+  const rows = Array.from(table.querySelectorAll('tr'));
+  
+  rows.sort((a, b) => {
+    const aVal = a.querySelector(`td:nth-child(${column})`).textContent;
+    const bVal = b.querySelector(`td:nth-child(${column})`).textContent;
+    
+    if (order === 'asc') {
+      return aVal.localeCompare(bVal);
+    } else {
+      return bVal.localeCompare(aVal);
+    }
+  });
+  
+  rows.forEach(row => table.appendChild(row));
+}
+
+// Example 4: Advanced toggle with state object
+function createAdvancedToggle(...states) {
+  let index = 0;
+  
+  return {
+    next: () => {
+      const current = states[index];
+      index = (index + 1) % states.length;
+      return current;
+    },
+    prev: () => {
+      index = (index - 1 + states.length) % states.length;
+      return states[index];
+    },
+    current: () => states[index],
+    goto: (targetState) => {
+      const targetIndex = states.indexOf(targetState);
+      if (targetIndex !== -1) {
+        index = targetIndex;
+        return states[index];
+      }
+      throw new Error(`State "${targetState}" not found`);
+    },
+    reset: () => {
+      index = 0;
+      return states[index];
+    }
+  };
+}
+
+const carousel = createAdvancedToggle('slide1', 'slide2', 'slide3', 'slide4');
+console.log(carousel.next());     // 'slide1'
+console.log(carousel.next());     // 'slide2'
+console.log(carousel.prev());     // 'slide1'
+console.log(carousel.goto('slide4'));  // 'slide4'
+```
+
+##### 3. onceFlag() - One-Time Flag
+
+```javascript
+/**
+ * Creates a flag that reports whether it's been triggered.
+ * Useful for tracking one-time events or initialization.
+ * 
+ * Use cases:
+ * - First-time user experiences
+ * - One-time notifications
+ * - Initialization tracking
+ */
+function onceFlag() {
+  let triggered = false;
+  
+  return {
+    trigger: () => {
+      if (!triggered) {
+        triggered = true;
+        return true;  // First time
+      }
+      return false;  // Already triggered
+    },
+    isTriggered: () => triggered,
+    reset: () => {
+      triggered = false;
+    }
+  };
+}
+
+// Example 1: First visit welcome message
+const firstVisit = onceFlag();
+
+function showWelcome() {
+  if (firstVisit.trigger()) {
+    showModal('Welcome to our site!');
+    console.log('Welcome message shown');
+  }
+}
+
+// Example 2: Feature introduction
+const featureIntros = {
+  dashboard: onceFlag(),
+  analytics: onceFlag(),
+  settings: onceFlag()
+};
+
+function showFeatureIntro(feature) {
+  if (featureIntros[feature].trigger()) {
+    showTutorial(feature);
+    console.log(`Showing ${feature} tutorial`);
+  }
+}
+
+// Example 3: One-time migration
+const dataMigrated = onceFlag();
+
+async function ensureDataMigration() {
+  if (dataMigrated.trigger()) {
+    console.log('Running data migration...');
+    await migrateUserData();
+    await migratePosts();
+    console.log('Migration complete');
+  } else {
+    console.log('Data already migrated');
+  }
+}
+
+// Example 4: Conditional initialization with dependencies
+function createInitFlag(dependencies = []) {
+  const flag = onceFlag();
+  
+  return {
+    init: async (callback) => {
+      if (flag.trigger()) {
+        // Wait for dependencies
+        await Promise.all(dependencies.map(dep => dep.init()));
+        await callback();
+        return true;
+      }
+      return false;
+    },
+    isInitialized: () => flag.isTriggered()
+  };
+}
+
+const dbInit = createInitFlag();
+const cacheInit = createInitFlag([dbInit]);
+const apiInit = createInitFlag([dbInit, cacheInit]);
+
+await apiInit.init(async () => {
+  console.log('Initializing API...');
+  await setupAPI();
+});
+```
+
+##### 4. accumulator() - Value Accumulator
+
+```javascript
+/**
+ * Creates an accumulator that stores and aggregates values.
+ * 
+ * Use cases:
+ * - Running totals
+ * - Log collection
+ * - Event aggregation
+ */
+function accumulator(initial = []) {
+  const values = [...initial];
+  
+  return {
+    add: (value) => {
+      values.push(value);
+      return values.length;
+    },
+    addAll: (...items) => {
+      values.push(...items);
+      return values.length;
+    },
+    get: () => [...values],
+    size: () => values.length,
+    clear: () => {
+      values.length = 0;
+    },
+    filter: (predicate) => values.filter(predicate),
+    map: (fn) => values.map(fn),
+    reduce: (fn, init) => values.reduce(fn, init)
+  };
+}
+
+// Example 1: Error logger
+const errorLog = accumulator();
+
+window.addEventListener('error', (event) => {
+  errorLog.add({
+    message: event.message,
+    timestamp: Date.now(),
+    stack: event.error?.stack
+  });
+  
+  console.log(`Total errors: ${errorLog.size()}`);
+});
+
+// Get all errors
+console.log(errorLog.get());
+
+// Example 2: Shopping cart
+function createShoppingCart() {
+  const items = accumulator();
+  
+  return {
+    addItem: (product, quantity = 1) => {
+      items.add({ product, quantity, addedAt: Date.now() });
+      console.log(`Added ${quantity}x ${product.name} to cart`);
+    },
+    
+    getItems: () => items.get(),
+    
+    getTotal: () => items.reduce(
+      (sum, item) => sum + (item.product.price * item.quantity),
+      0
+    ),
+    
+    getItemCount: () => items.reduce(
+      (sum, item) => sum + item.quantity,
+      0
+    ),
+    
+    clearCart: () => items.clear()
+  };
+}
+
+const cart = createShoppingCart();
+cart.addItem({ name: 'Book', price: 15 }, 2);
+cart.addItem({ name: 'Pen', price: 2 }, 5);
+console.log('Total:', cart.getTotal());  // 40
+console.log('Items:', cart.getItemCount());  // 7
+
+// Example 3: Performance metrics
+function createMetricsCollector() {
+  const metrics = accumulator();
+  
+  return {
+    record: (name, value, unit = 'ms') => {
+      metrics.add({ name, value, unit, timestamp: Date.now() });
+    },
+    
+    getAverage: (name) => {
+      const filtered = metrics.filter(m => m.name === name);
+      if (filtered.length === 0) return 0;
+      const sum = filtered.reduce((acc, m) => acc + m.value, 0);
+      return sum / filtered.length;
+    },
+    
+    getMax: (name) => {
+      const filtered = metrics.filter(m => m.name === name);
+      return Math.max(...filtered.map(m => m.value));
+    },
+    
+    getStats: (name) => {
+      const filtered = metrics.filter(m => m.name === name);
+      if (filtered.length === 0) return null;
+      
+      const values = filtered.map(m => m.value);
+      const sum = values.reduce((a, b) => a + b, 0);
+      
+      return {
+        count: filtered.length,
+        avg: sum / filtered.length,
+        min: Math.min(...values),
+        max: Math.max(...values)
+      };
+    },
+    
+    clear: () => metrics.clear()
+  };
+}
+
+const perf = createMetricsCollector();
+perf.record('api-call', 150);
+perf.record('api-call', 200);
+perf.record('render', 16);
+console.log(perf.getStats('api-call'));  // { count: 2, avg: 175, min: 150, max: 200 }
+```
+
+##### 5. createStore(initial) - Private State Store
+
+```javascript
+/**
+ * Creates a private data store with getter/setter methods.
+ * Provides encapsulation and controlled access to data.
+ * 
+ * Use cases:
+ * - Application state
+ * - Configuration management
+ * - Data privacy
+ */
+function createStore(initialData = {}) {
+  let data = { ...initialData };
+  const listeners = [];
+  
+  return {
+    get: (key) => {
+      if (key === undefined) return { ...data };
+      return data[key];
+    },
+    
+    set: (key, value) => {
+      const oldValue = data[key];
+      data[key] = value;
+      
+      // Notify listeners
+      listeners.forEach(listener => {
+        listener(key, value, oldValue);
+      });
+      
+      return value;
+    },
+    
+    update: (key, updater) => {
+      const oldValue = data[key];
+      const newValue = updater(oldValue);
+      return this.set(key, newValue);
+    },
+    
+    delete: (key) => {
+      const value = data[key];
+      delete data[key];
+      return value;
+    },
+    
+    has: (key) => key in data,
+    
+    subscribe: (listener) => {
+      listeners.push(listener);
+      return () => {
+        const index = listeners.indexOf(listener);
+        if (index > -1) listeners.splice(index, 1);
+      };
+    },
+    
+    reset: () => {
+      data = { ...initialData };
+    }
+  };
+}
+
+// Example 1: User preferences store
+const preferences = createStore({
+  theme: 'light',
+  language: 'en',
+  notifications: true
+});
+
+preferences.subscribe((key, newValue, oldValue) => {
+  console.log(`${key} changed from ${oldValue} to ${newValue}`);
+  localStorage.setItem(`pref_${key}`, JSON.stringify(newValue));
+});
+
+preferences.set('theme', 'dark');  // Logs: "theme changed from light to dark"
+
+// Example 2: Application state store
+function createAppStore(initial) {
+  const store = createStore(initial);
+  
+  return {
+    getState: () => store.get(),
+    
+    setState: (updates) => {
+      Object.entries(updates).forEach(([key, value]) => {
+        store.set(key, value);
+      });
+    },
+    
+    subscribe: (listener) => store.subscribe(listener),
+    
+    dispatch: (action) => {
+      switch (action.type) {
+        case 'SET_USER':
+          store.set('user', action.payload);
+          break;
+        case 'SET_LOADING':
+          store.set('loading', action.payload);
+          break;
+        case 'SET_ERROR':
+          store.set('error', action.payload);
+          break;
+        default:
+          console.warn('Unknown action:', action.type);
+      }
+    }
+  };
+}
+
+const appStore = createAppStore({
+  user: null,
+  loading: false,
+  error: null
+});
+
+appStore.subscribe((key, value) => {
+  console.log(`State updated: ${key} =`, value);
+  renderApp();
+});
+
+appStore.dispatch({ type: 'SET_USER', payload: { name: 'Alice' } });
+
+// Example 3: Computed values store
+function createComputedStore(initial, computed = {}) {
+  const store = createStore(initial);
+  
+  return {
+    get: (key) => {
+      if (key in computed) {
+        return computed[key](store.get());
+      }
+      return store.get(key);
+    },
+    set: store.set,
+    subscribe: store.subscribe
+  };
+}
+
+const cartStore = createComputedStore(
+  { items: [], tax: 0.1 },
+  {
+    subtotal: (state) => state.items.reduce((sum, item) => sum + item.price * item.qty, 0),
+    taxAmount: (state, getters) => getters.subtotal * state.tax,
+    total: (state, getters) => getters.subtotal + getters.taxAmount
+  }
+);
+```
+
+##### 6. sequentialId(prefix) - ID Generator
+
+```javascript
+/**
+ * Creates a sequential ID generator with optional prefix.
+ * 
+ * Use cases:
+ * - Unique identifiers
+ * - Element IDs
+ * - Transaction IDs
+ */
+function sequentialId(prefix = '') {
+  let id = 0;
+  
+  return {
+    next: () => `${prefix}${++id}`,
+    current: () => `${prefix}${id}`,
+    peek: () => `${prefix}${id + 1}`,
+    reset: () => {
+      id = 0;
+    },
+    setPrefix: (newPrefix) => {
+      prefix = newPrefix;
+    }
+  };
+}
+
+// Example 1: Element ID generator
+const elementIds = sequentialId('el-');
+
+function createElement(tag) {
+  const el = document.createElement(tag);
+  el.id = elementIds.next();
+  return el;
+}
+
+const div1 = createElement('div');  // id: "el-1"
+const div2 = createElement('div');  // id: "el-2"
+
+// Example 2: Transaction ID generator
+const transactionIds = sequentialId('TX');
+
+async function processPayment(amount) {
+  const txId = transactionIds.next();
+  console.log(`Processing transaction ${txId} for $${amount}`);
+  
+  await fetch('/api/payments', {
+    method: 'POST',
+    body: JSON.stringify({
+      transactionId: txId,
+      amount
+    })
+  });
+  
+  return txId;
+}
+
+// Example 3: Multiple ID generators
+function createIdManager() {
+  const generators = new Map();
+  
+  return {
+    getGenerator: (name, prefix = '') => {
+      if (!generators.has(name)) {
+        generators.set(name, sequentialId(prefix));
+      }
+      return generators.get(name);
+    },
+    
+    nextId: (name) => {
+      return this.getGenerator(name).next();
+    }
+  };
+}
+
+const idManager = createIdManager();
+
+const userId = idManager.nextId('user');        // "1"
+const postId = idManager.nextId('post');        // "1"
+const commentId = idManager.nextId('comment');  // "1"
+const userId2 = idManager.nextId('user');       // "2"
+
+// Example 4: UUID-style generator with closure
+function createUuidGenerator() {
+  let timestamp = Date.now();
+  let sequence = 0;
+  
+  return function() {
+    const now = Date.now();
+    
+    if (now === timestamp) {
+      sequence++;
+    } else {
+      timestamp = now;
+      sequence = 0;
+    }
+    
+    return `${timestamp}-${sequence}-${Math.random().toString(36).substr(2, 9)}`;
+  };
+}
+
+const generateUuid = createUuidGenerator();
+console.log(generateUuid());  // "1699123456789-0-a1b2c3d4e"
+console.log(generateUuid());  // "1699123456789-1-f5g6h7i8j"
+```
+
+#### E. Asynchronous & Promise Utilities
+
+These functions manage async state and concurrency through closures, providing advanced async programming patterns.
+
+##### 1. debounceAsync(fn, wait) - Debounce Async Functions
+
+```javascript
+/**
+ * Debounces async functions, cancelling pending promises.
+ * Ensures only the latest call completes.
+ * 
+ * Use cases:
+ * - Async API calls
+ * - Form validation
+ * - Autosave functionality
+ */
+function debounceAsync(fn, wait) {
+  let timeout;
+  let pending = null;
+  
+  return function(...args) {
+    clearTimeout(timeout);
+    
+    // Cancel previous pending promise
+    if (pending) {
+      pending.cancel = true;
+    }
+    
+    return new Promise((resolve, reject) => {
+      const promise = { cancel: false };
+      pending = promise;
+      
+      timeout = setTimeout(async () => {
+        try {
+          if (!promise.cancel) {
+            const result = await fn.apply(this, args);
+            if (!promise.cancel) {
+              resolve(result);
+            }
+          }
+        } catch (error) {
+          if (!promise.cancel) {
+            reject(error);
+          }
+        }
+      }, wait);
+    });
+  };
+}
+
+// Example 1: Debounced API search
+const searchAPI = debounceAsync(async (query) => {
+  console.log('Searching for:', query);
+  const response = await fetch(`/api/search?q=${query}`);
+  return response.json();
+}, 500);
+
+searchInput.addEventListener('input', async (e) => {
+  try {
+    const results = await searchAPI(e.target.value);
+    displayResults(results);
+  } catch (error) {
+    console.error('Search failed:', error);
+  }
+});
+
+// Example 2: Auto-save with debounce
+const autoSave = debounceAsync(async (content) => {
+  console.log('Saving...');
+  const response = await fetch('/api/save', {
+    method: 'POST',
+    body: JSON.stringify({ content })
+  });
+  
+  if (response.ok) {
+    showSaveIndicator('Saved!');
+  }
+  
+  return response.json();
+}, 2000);
+
+editor.addEventListener('input', (e) => {
+  autoSave(e.target.value);
+});
+```
+
+##### 2. throttleAsync(fn, wait) - Throttle Async Functions
+
+```javascript
+/**
+ * Throttles async functions to run at most once per wait period.
+ * 
+ * Use cases:
+ * - Rate-limited API calls
+ * - Scroll-triggered data fetching
+ * - Real-time updates
+ */
+function throttleAsync(fn, wait) {
+  let timeout;
+  let lastRan = 0;
+  let pending = null;
+  
+  return async function(...args) {
+    const now = Date.now();
+    
+    if (now - lastRan >= wait) {
+      lastRan = now;
+      return fn.apply(this, args);
+    } else if (!pending) {
+      pending = new Promise((resolve, reject) => {
+        timeout = setTimeout(async () => {
+          lastRan = Date.now();
+          pending = null;
+          try {
+            const result = await fn.apply(this, args);
+            resolve(result);
+          } catch (error) {
+            reject(error);
+          }
+        }, wait - (now - lastRan));
+      });
+    }
+    
+    return pending;
+  };
+}
+
+// Example: Throttled infinite scroll
+const loadMore = throttleAsync(async () => {
+  console.log('Loading more items...');
+  const response = await fetch(`/api/items?page=${currentPage++}`);
+  const items = await response.json();
+  appendItems(items);
+  return items;
+}, 1000);
+
+window.addEventListener('scroll', () => {
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
+    loadMore();
+  }
+});
+```
+
+##### 3. queue(fn, concurrency) - Concurrency Control Queue
+
+```javascript
+/**
+ * Controls async function concurrency.
+ * Tracks running promises and queues additional calls.
+ * 
+ * Use cases:
+ * - API rate limiting
+ * - Resource pool management
+ * - Controlled parallel processing
+ */
+function queue(fn, concurrency = 1) {
+  const waiting = [];
+  let running = 0;
+  
+  async function processNext() {
+    if (waiting.length === 0 || running >= concurrency) {
+      return;
+    }
+    
+    running++;
+    const { args, resolve, reject, context } = waiting.shift();
+    
+    try {
+      const result = await fn.apply(context, args);
+      resolve(result);
+    } catch (error) {
+      reject(error);
+    } finally {
+      running--;
+      processNext();
+    }
+  }
+  
+  return function(...args) {
+    return new Promise((resolve, reject) => {
+      waiting.push({
+        args,
+        resolve,
+        reject,
+        context: this
+      });
+      processNext();
+    });
+  };
+}
+
+// Example 1: Concurrent API calls with limit
+const fetchWithLimit = queue(async (url) => {
+  console.log('Fetching:', url);
+  const response = await fetch(url);
+  return response.json();
+}, 3);  // Max 3 concurrent requests
+
+const urls = [
+  '/api/user/1',
+  '/api/user/2',
+  '/api/user/3',
+  '/api/user/4',
+  '/api/user/5'
+];
+
+const results = await Promise.all(urls.map(url => fetchWithLimit(url)));
+
+// Example 2: Image upload queue
+const uploadImage = queue(async (file) => {
+  console.log(`Uploading ${file.name}...`);
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const response = await fetch('/api/upload', {
+    method: 'POST',
+    body: formData
+  });
+  
+  return response.json();
+}, 2);  // Upload 2 images at a time
+
+const files = Array.from(fileInput.files);
+const uploads = files.map(file => uploadImage(file));
+const results = await Promise.all(uploads);
+```
+
+##### 4. limit(fn, n) - Concurrent Execution Limit
+
+```javascript
+/**
+ * Limits concurrent executions of async function to n.
+ * 
+ * Use cases:
+ * - Database connection pooling
+ * - API call throttling
+ * - Resource management
+ */
+function limit(fn, n) {
+  let running = 0;
+  const waiting = [];
+  
+  async function tryRun(args, context) {
+    if (running < n) {
+      running++;
+      try {
+        return await fn.apply(context, args);
+      } finally {
+        running--;
+        if (waiting.length > 0) {
+          const next = waiting.shift();
+          tryRun(next.args, next.context).then(next.resolve, next.reject);
+        }
+      }
+    } else {
+      return new Promise((resolve, reject) => {
+        waiting.push({ args, context, resolve, reject });
+      });
+    }
+  }
+  
+  return function(...args) {
+    return tryRun(args, this);
+  };
+}
+
+// Example: Database query limiter
+const query = limit(async (sql, params) => {
+  console.log('Executing query:', sql);
+  const connection = await pool.getConnection();
+  try {
+    const result = await connection.query(sql, params);
+    return result;
+  } finally {
+    connection.release();
+  }
+}, 10);  // Max 10 concurrent queries
+
+// Multiple queries - only 10 run concurrently
+const queries = Array.from({ length: 50 }, (_, i) =>
+  query('SELECT * FROM users WHERE id = ?', [i + 1])
+);
+
+const results = await Promise.all(queries);
+```
+
+##### 5. retryAsync(fn, attempts, delay) - Async Retry Logic
+
+```javascript
+/**
+ * Retries async function with exponential backoff.
+ * 
+ * Use cases:
+ * - Network request retries
+ * - Flaky API handling
+ * - Resource availability waiting
+ */
+function retryAsync(fn, attempts = 3, delay = 1000, backoff = 2) {
+  return async function(...args) {
+    let lastError;
+    
+    for (let i = 0; i < attempts; i++) {
+      try {
+        return await fn.apply(this, args);
+      } catch (error) {
+        lastError = error;
+        
+        if (i < attempts - 1) {
+          const waitTime = delay * Math.pow(backoff, i);
+          console.log(`Attempt ${i + 1} failed, retrying in ${waitTime}ms...`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
+      }
+    }
+    
+    throw lastError;
+  };
+}
+
+// Example: Retry API call
+const fetchWithRetry = retryAsync(async (url) => {
+  console.log('Fetching:', url);
+  const response = await fetch(url);
+  
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  
+  return response.json();
+}, 5, 1000, 2);
+
+try {
+  const data = await fetchWithRetry('/api/data');
+  console.log('Success:', data);
+} catch (error) {
+  console.error('Failed after retries:', error);
+}
+```
+
+##### 6. cachePromise(fn) - Promise Deduplication
+
+```javascript
+/**
+ * Caches in-flight promises to prevent duplicate requests.
+ * 
+ * Use cases:
+ * - Prevent duplicate API calls
+ * - Resource initialization
+ * - Data fetching optimization
+ */
+function cachePromise(fn) {
+  const cache = new Map();
+  
+  return function(...args) {
+    const key = JSON.stringify(args);
+    
+    if (cache.has(key)) {
+      const cached = cache.get(key);
+      if (cached.pending) {
+        console.log('Returning in-flight promise');
+        return cached.promise;
+      }
+      if (Date.now() - cached.timestamp < 60000) {
+        console.log('Returning cached result');
+        return Promise.resolve(cached.value);
+      }
+    }
+    
+    console.log('Creating new promise');
+    const promise = fn.apply(this, args)
+      .then(value => {
+        cache.set(key, {
+          value,
+          pending: false,
+          timestamp: Date.now()
+        });
+        return value;
+      })
+      .catch(error => {
+        cache.delete(key);
+        throw error;
+      });
+    
+    cache.set(key, { promise, pending: true });
+    return promise;
+  };
+}
+
+// Example: Prevent duplicate user fetches
+const fetchUser = cachePromise(async (userId) => {
+  console.log(`Fetching user ${userId}...`);
+  const response = await fetch(`/api/users/${userId}`);
+  return response.json();
+});
+
+// Multiple simultaneous calls return same promise
+const user1Promise = fetchUser(123);
+const user2Promise = fetchUser(123);  // Same promise
+const user3Promise = fetchUser(123);  // Same promise
+
+console.log(user1Promise === user2Promise);  // true
+```
+
+##### 7. deferAsync(fn) - Async Task Deferral
+
+```javascript
+/**
+ * Defers async execution to next tick.
+ * 
+ * Use cases:
+ * - Breaking up heavy async operations
+ * - Yielding to event loop
+ * - Background task processing
+ */
+function deferAsync(fn) {
+  return function(...args) {
+    return new Promise((resolve) => {
+      setTimeout(async () => {
+        resolve(await fn.apply(this, args));
+      }, 0);
+    });
+  };
+}
+
+// Example: Process large dataset in chunks
+async function processLargeDataset(data) {
+  const processChunk = deferAsync(async (chunk) => {
+    return chunk.map(item => expensiveOperation(item));
+  });
+  
+  const chunkSize = 1000;
+  const results = [];
+  
+  for (let i = 0; i < data.length; i += chunkSize) {
+    const chunk = data.slice(i, i + chunkSize);
+    const result = await processChunk(chunk);
+    results.push(...result);
+    
+    // Update progress
+    updateProgress(i / data.length * 100);
+  }
+  
+  return results;
+}
+```
+
+#### F. Utility Closures for Events & DOM
+
+Functions that encapsulate event state and DOM behavior using closures.
+
+##### 1. onceEvent(element, event, handler) - One-Time Event Listener
+
+```javascript
+/**
+ * Adds an event listener that automatically removes itself after first execution.
+ * 
+ * Use cases:
+ * - One-time user interactions
+ * - Initial load events
+ * - Transition/animation end handlers
+ */
+function onceEvent(element, event, handler) {
+  const wrapper = function(e) {
+    handler.call(this, e);
+    element.removeEventListener(event, wrapper);
+  };
+  
+  element.addEventListener(event, wrapper);
+  
+  return () => element.removeEventListener(event, wrapper);
+}
+
+// Example 1: One-time welcome modal
+onceEvent(document, 'DOMContentLoaded', () => {
+  showWelcomeModal();
+  console.log('Welcome modal shown once');
+});
+
+// Example 2: First click handler
+const button = document.getElementById('subscribe-btn');
+onceEvent(button, 'click', async () => {
+  console.log('Processing subscription...');
+  await subscribe();
+  button.textContent = 'Subscribed!';
+  button.disabled = true;
+});
+
+// Example 3: Animation end cleanup
+const element = document.querySelector('.animate');
+onceEvent(element, 'animationend', () => {
+  element.classList.remove('animating');
+  element.style.opacity = '1';
+});
+```
+
+##### 2. debouncedResize(handler, wait) - Debounced Resize Handler
+
+```javascript
+/**
+ * Creates a debounced resize handler with cleanup.
+ * 
+ * Use cases:
+ * - Responsive layout recalculation
+ * - Chart resizing
+ * - Mobile orientation changes
+ */
+function debouncedResize(handler, wait = 250) {
+  let timeout;
+  
+  const debouncedHandler = () => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      handler();
+    }, wait);
+  };
+  
+  window.addEventListener('resize', debouncedHandler);
+  
+  // Return cleanup function
+  return () => {
+    clearTimeout(timeout);
+    window.removeEventListener('resize', debouncedHandler);
+  };
+}
+
+// Example 1: Responsive chart
+const stopListening = debouncedResize(() => {
+  console.log('Resizing chart to:', window.innerWidth, 'x', window.innerHeight);
+  chart.resize(window.innerWidth, window.innerHeight);
+  recalculateLayout();
+}, 300);
+
+// Clean up when component unmounts
+// stopListening();
+
+// Example 2: Mobile-aware resize
+function createResponsiveHandler() {
+  let isMobile = window.innerWidth < 768;
+  
+  return debouncedResize(() => {
+    const wasMobile = isMobile;
+    isMobile = window.innerWidth < 768;
+    
+    if (wasMobile !== isMobile) {
+      console.log(`Switched to ${isMobile ? 'mobile' : 'desktop'} view`);
+      reloadLayout();
+    } else {
+      adjustLayout();
+    }
+  }, 200);
+}
+
+const cleanup = createResponsiveHandler();
+```
+
+##### 3. eventBuffer(fn, delay) - Event Buffering
+
+```javascript
+/**
+ * Buffers multiple rapid events into a single call.
+ * 
+ * Use cases:
+ * - Keyboard input handling
+ * - Mouse movement tracking
+ * - Touch gesture recognition
+ */
+function eventBuffer(fn, delay = 100) {
+  const events = [];
+  let timeout;
+  
+  return function(event) {
+    events.push(event);
+    
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      fn.call(this, [...events]);
+      events.length = 0;
+    }, delay);
+  };
+}
+
+// Example 1: Buffer mouse movements
+const handleMouseMoves = eventBuffer((events) => {
+  console.log(`Processed ${events.length} mouse movements`);
+  const avgX = events.reduce((sum, e) => sum + e.clientX, 0) / events.length;
+  const avgY = events.reduce((sum, e) => sum + e.clientY, 0) / events.length;
+  updateCursor(avgX, avgY);
+}, 50);
+
+document.addEventListener('mousemove', handleMouseMoves);
+
+// Example 2: Buffer keystrokes
+const handleKeystrokes = eventBuffer((events) => {
+  const text = events.map(e => e.key).join('');
+  console.log('Text entered:', text);
+  processInput(text);
+}, 500);
+
+input.addEventListener('keydown', handleKeystrokes);
+```
+
+##### 4. lazyLoader(selector) - Lazy Content Loading
+
+```javascript
+/**
+ * Loads DOM content only once when needed.
+ * 
+ * Use cases:
+ * - Lazy image loading
+ * - Infinite scroll
+ * - Progressive content loading
+ */
+function lazyLoader(selector) {
+  const loaded = new Set();
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !loaded.has(entry.target)) {
+        loaded.add(entry.target);
+        loadContent(entry.target);
+      }
+    });
+  });
+  
+  function loadContent(element) {
+    const src = element.dataset.src;
+    if (src) {
+      console.log('Loading:', src);
+      
+      if (element.tagName === 'IMG') {
+        element.src = src;
+      } else {
+        fetch(src)
+          .then(r => r.text())
+          .then(html => {
+            element.innerHTML = html;
+          });
+      }
+    }
+  }
+  
+  document.querySelectorAll(selector).forEach(el => {
+    observer.observe(el);
+  });
+  
+  return {
+    observe: (element) => observer.observe(element),
+    unobserve: (element) => observer.unobserve(element),
+    disconnect: () => observer.disconnect()
+  };
+}
+
+// Example: Lazy load images
+const imageLoader = lazyLoader('img[data-src]');
+
+// Dynamically add new images
+const newImg = document.createElement('img');
+newImg.dataset.src = '/images/photo.jpg';
+document.body.appendChild(newImg);
+imageLoader.observe(newImg);
+```
+
+##### 5. withContextMenu(state) - Context Menu State
+
+```javascript
+/**
+ * Retains last right-clicked element for context menu.
+ * 
+ * Use cases:
+ * - Custom context menus
+ * - Right-click actions
+ * - Element-specific menus
+ */
+function withContextMenu(state = {}) {
+  let currentElement = null;
+  
+  document.addEventListener('contextmenu', (e) => {
+    currentElement = e.target;
+    state.x = e.clientX;
+    state.y = e.clientY;
+  });
+  
+  return {
+    getCurrentElement: () => currentElement,
+    getPosition: () => ({ x: state.x, y: state.y }),
+    
+    showMenu: (menuElement) => {
+      if (currentElement) {
+        menuElement.style.left = `${state.x}px`;
+        menuElement.style.top = `${state.y}px`;
+        menuElement.style.display = 'block';
+      }
+    },
+    
+    hideMenu: (menuElement) => {
+      menuElement.style.display = 'none';
+      currentElement = null;
+    }
+  };
+}
+
+// Example: Custom context menu
+const contextMenu = withContextMenu();
+
+document.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  const element = contextMenu.getCurrentElement();
+  
+  if (element.classList.contains('editable')) {
+    const menu = document.getElementById('context-menu');
+    contextMenu.showMenu(menu);
+    
+    // Set up menu actions
+    document.getElementById('edit').onclick = () => {
+      editElement(element);
+      contextMenu.hideMenu(menu);
+    };
+    
+    document.getElementById('delete').onclick = () => {
+      deleteElement(element);
+      contextMenu.hideMenu(menu);
+    };
+  }
+});
+
+document.addEventListener('click', () => {
+  const menu = document.getElementById('context-menu');
+  contextMenu.hideMenu(menu);
+});
+```
+
+#### G. Security / Privacy via Closure
+
+Functions that use closures to hide internal data and provide secure interfaces.
+
+##### 1. createPrivateStore() - Private Data Storage
+
+```javascript
+/**
+ * Creates a private data store using WeakMap or closure.
+ * Prevents external access to sensitive data.
+ * 
+ * Use cases:
+ * - Sensitive user data
+ * - Private class fields
+ * - Encapsulated state
+ */
+function createPrivateStore() {
+  const store = new WeakMap();
+  
+  return {
+    set: (obj, key, value) => {
+      if (!store.has(obj)) {
+        store.set(obj, {});
+      }
+      store.get(obj)[key] = value;
+    },
+    
+    get: (obj, key) => {
+      const data = store.get(obj);
+      return data ? data[key] : undefined;
+    },
+    
+    has: (obj, key) => {
+      const data = store.get(obj);
+      return data ? key in data : false;
+    },
+    
+    delete: (obj, key) => {
+      const data = store.get(obj);
+      if (data) {
+        delete data[key];
+      }
+    }
+  };
+}
+
+// Example: User with private data
+const privateData = createPrivateStore();
+
+class User {
+  constructor(username, password) {
+    this.username = username;
+    privateData.set(this, 'password', hashPassword(password));
+    privateData.set(this, 'apiKey', generateApiKey());
+  }
+  
+  verifyPassword(password) {
+    const stored = privateData.get(this, 'password');
+    return hashPassword(password) === stored;
+  }
+  
+  getApiKey(password) {
+    if (this.verifyPassword(password)) {
+      return privateData.get(this, 'apiKey');
+    }
+    throw new Error('Invalid password');
+  }
+}
+
+const user = new User('alice', 'secret123');
+console.log(user.username);  // 'alice'
+console.log(user.password);  // undefined (private!)
+console.log(user.verifyPassword('secret123'));  // true
+```
+
+##### 2. makeCounter() - Hidden Counter
+
+```javascript
+/**
+ * Creates a counter with hidden internal value.
+ * Only exposes methods, not state.
+ * 
+ * Use cases:
+ * - Rate limiting
+ * - Usage tracking
+ * - Secure incrementing
+ */
+function makeCounter() {
+  let count = 0;
+  
+  return {
+    inc() {
+      return ++count;
+    },
+    dec() {
+      return --count;
+    },
+    value() {
+      // Return copy, not reference
+      return count;
+    }
+  };
+}
+
+// Example: API rate limit counter
+function createRateLimiter(maxRequests, windowMs) {
+  const counter = makeCounter();
+  let windowStart = Date.now();
+  
+  return {
+    canMakeRequest: () => {
+      const now = Date.now();
+      
+      // Reset window
+      if (now - windowStart > windowMs) {
+        windowStart = now;
+        // Reset counter (create new one)
+        return true;
+      }
+      
+      return counter.value() < maxRequests;
+    },
+    
+    recordRequest: () => {
+      if (this.canMakeRequest()) {
+        counter.inc();
+        return true;
+      }
+      return false;
+    }
+  };
+}
+```
+
+##### 3. privateMethodFactory() - Private Methods
+
+```javascript
+/**
+ * Creates objects with private methods.
+ * 
+ * Use cases:
+ * - Internal helpers
+ * - Protected operations
+ * - Implementation hiding
+ */
+function privateMethodFactory() {
+  // Private methods (not exposed)
+  function validateInput(input) {
+    if (!input || input.length < 3) {
+      throw new Error('Invalid input');
+    }
+  }
+  
+  function sanitize(input) {
+    return input.trim().toLowerCase();
+  }
+  
+  function encrypt(data) {
+    // Simplified encryption
+    return btoa(data);
+  }
+  
+  // Public interface
+  return {
+    processData(input) {
+      validateInput(input);
+      const clean = sanitize(input);
+      return encrypt(clean);
+    },
+    
+    safeProcess(input) {
+      try {
+        return this.processData(input);
+      } catch (error) {
+        console.error('Processing failed:', error.message);
+        return null;
+      }
+    }
+  };
+}
+
+// Example: Secure API client
+function createSecureClient(apiKey) {
+  // Private methods
+  function sign(data) {
+    return hmacSha256(data, apiKey);
+  }
+  
+  function encrypt(data) {
+    return aesEncrypt(data, apiKey);
+  }
+  
+  // Public methods
+  return {
+    async sendRequest(endpoint, data) {
+      const encrypted = encrypt(JSON.stringify(data));
+      const signature = sign(encrypted);
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'X-Signature': signature
+        },
+        body: encrypted
+      });
+      
+      return response.json();
+    }
+  };
+}
+
+const client = createSecureClient('secret-key');
+// client.sign() - not accessible (private)
+// client.encrypt() - not accessible (private)
+client.sendRequest('/api/data', { message: 'hello' });  // Works
+```
+
+##### 4. onceSecret(key) - One-Time Secret Validation
+
+```javascript
+/**
+ * Validates a secret only once.
+ * 
+ * Use cases:
+ * - One-time passwords
+ * - Single-use tokens
+ * - Secure initialization
+ */
+function onceSecret(expectedKey) {
+  let used = false;
+  let attempts = 0;
+  const maxAttempts = 3;
+  
+  return {
+    validate: (key) => {
+      if (used) {
+        throw new Error('Secret already used');
+      }
+      
+      if (attempts >= maxAttempts) {
+        throw new Error('Too many attempts');
+      }
+      
+      attempts++;
+      
+      if (key === expectedKey) {
+        used = true;
+        return true;
+      }
+      
+      return false;
+    },
+    
+    isUsed: () => used,
+    getAttempts: () => attempts
+  };
+}
+
+// Example: One-time initialization
+const initSecret = onceSecret('init-token-12345');
+
+async function initialize(token) {
+  try {
+    if (initSecret.validate(token)) {
+      console.log('Initializing system...');
+      await setupDatabase();
+      await loadConfiguration();
+      console.log('System initialized');
+      return true;
+    } else {
+      console.error('Invalid initialization token');
+      return false;
+    }
+  } catch (error) {
+    console.error('Initialization error:', error.message);
+    return false;
+  }
+}
+
+// First call with correct token
+await initialize('init-token-12345');  // Success
+
+// Second call fails
+await initialize('init-token-12345');  // Error: Secret already used
+```
+
+#### H. Miscellaneous Functional Tools
+
+Other closure-driven helpers commonly found in functional programming libraries.
+
+##### 1. constant(value) - Always Return Same Value
+
+```javascript
+/**
+ * Returns a function that always returns the same value.
+ * 
+ * Use cases:
+ * - Default values
+ * - Functional composition
+ * - Testing/mocking
+ */
+function constant(value) {
+  return function() {
+    return value;
+  };
+}
+
+// Example 1: Default values
+const getDefaultUser = constant({ name: 'Guest', role: 'visitor' });
+
+function loadUser(id) {
+  if (!id) return getDefaultUser();
+  return fetchUser(id);
+}
+
+// Example 2: Functional composition
+const numbers = [1, 2, 3, 4, 5];
+const always10 = constant(10);
+
+console.log(numbers.map(always10));  // [10, 10, 10, 10, 10]
+
+// Example 3: Mocking
+const mockFetch = constant(Promise.resolve({ data: 'mock data' }));
+```
+
+##### 2. identity(x) - Return Argument Unchanged
+
+```javascript
+/**
+ * Returns its argument unchanged.
+ * Useful in functional chains and as default callback.
+ * 
+ * Use cases:
+ * - Default transformers
+ * - Functional composition
+ * - Array filtering
+ */
+function identity(x) {
+  return x;
+}
+
+// Example 1: Filter truthy values
+const values = [0, 1, false, true, '', 'hello', null, 'world'];
+console.log(values.filter(identity));  // [1, true, 'hello', 'world']
+
+// Example 2: Default transformer
+function transform(data, transformer = identity) {
+  return data.map(transformer);
+}
+
+console.log(transform([1, 2, 3]));  // [1, 2, 3]
+console.log(transform([1, 2, 3], x => x * 2));  // [2, 4, 6]
+
+// Example 3: Flatten arrays
+const nested = [[1], [2], [3]];
+console.log(nested.flatMap(identity));  // [1, 2, 3]
+```
+
+##### 3. noop() - No Operation
+
+```javascript
+/**
+ * A function that does nothing.
+ * Useful as placeholder or default callback.
+ * 
+ * Use cases:
+ * - Default callbacks
+ * - Event handler placeholders
+ * - Testing
+ */
+function noop() {}
+
+// Example 1: Default callback
+function fetchData(url, onSuccess = noop, onError = noop) {
+  fetch(url)
+    .then(r => r.json())
+    .then(onSuccess)
+    .catch(onError);
+}
+
+// Example 2: Optional event handlers
+class EventEmitter {
+  constructor() {
+    this.handlers = {};
+  }
+  
+  on(event, handler = noop) {
+    this.handlers[event] = handler;
+  }
+  
+  emit(event, data) {
+    const handler = this.handlers[event] || noop;
+    handler(data);
+  }
+}
+```
+
+##### 4. uniqueId(prefix) - Unique ID Generator
+
+```javascript
+/**
+ * Generates unique IDs with internal counter.
+ * 
+ * Use cases:
+ * - Element IDs
+ * - Temporary keys
+ * - Testing
+ */
+function uniqueId(prefix = 'id') {
+  let counter = 0;
+  
+  return function() {
+    return `${prefix}_${++counter}`;
+  };
+}
+
+// Example: Component ID generator
+const generateComponentId = uniqueId('component');
+
+class Component {
+  constructor() {
+    this.id = generateComponentId();
+  }
+}
+
+const comp1 = new Component();  // id: "component_1"
+const comp2 = new Component();  // id: "component_2"
+```
+
+##### 5. times(n, fn) - Execute n Times
+
+```javascript
+/**
+ * Executes a function n times, maintaining internal counter.
+ * 
+ * Use cases:
+ * - Batch operations
+ * - Testing
+ * - Data generation
+ */
+function times(n, fn) {
+  const results = [];
+  for (let i = 0; i < n; i++) {
+    results.push(fn(i));
+  }
+  return results;
+}
+
+// Example 1: Generate test data
+const users = times(10, i => ({
+  id: i + 1,
+  name: `User ${i + 1}`,
+  email: `user${i + 1}@example.com`
+}));
+
+// Example 2: Create elements
+const buttons = times(5, i => {
+  const btn = document.createElement('button');
+  btn.textContent = `Button ${i + 1}`;
+  btn.onclick = () => console.log(`Clicked button ${i + 1}`);
+  return btn;
+});
+
+buttons.forEach(btn => document.body.appendChild(btn));
+```
+
+##### 6. sequence(...fns) - Sequential Execution
+
+```javascript
+/**
+ * Runs multiple functions in order.
+ * 
+ * Use cases:
+ * - Initialization sequences
+ * - Setup procedures
+ * - Event chains
+ */
+function sequence(...fns) {
+  return function(...args) {
+    fns.forEach(fn => fn.apply(this, args));
+  };
+}
+
+// Example: Initialization sequence
+const initialize = sequence(
+  () => console.log('Loading configuration...'),
+  () => console.log('Connecting to database...'),
+  () => console.log('Starting server...'),
+  () => console.log('Application ready!')
+);
+
+initialize();
+```
+
+##### 7. predicateChain(...predicates) - Chain Predicates
+
+```javascript
+/**
+ * Combines multiple boolean closures with AND logic.
+ * 
+ * Use cases:
+ * - Complex validation
+ * - Filter combinations
+ * - Authorization checks
+ */
+function predicateChain(...predicates) {
+  return function(...args) {
+    return predicates.every(pred => pred.apply(this, args));
+  };
+}
+
+// Example: Complex validation
+const isAdult = user => user.age >= 18;
+const hasEmail = user => !!user.email;
+const isVerified = user => user.verified === true;
+
+const canAccessService = predicateChain(isAdult, hasEmail, isVerified);
+
+const user1 = { age: 25, email: 'user@example.com', verified: true };
+const user2 = { age: 16, email: 'teen@example.com', verified: true };
+
+console.log(canAccessService(user1));  // true
+console.log(canAccessService(user2));  // false (not adult)
+```
+
+##### 8. withRetry(fn, maxTries) - Simple Retry
+
+```javascript
+/**
+ * Repeats function until success or max tries.
+ * 
+ * Use cases:
+ * - Flaky operations
+ * - Network retries
+ * - Resource contention
+ */
+function withRetry(fn, maxTries = 3) {
+  return function(...args) {
+    let lastError;
+    
+    for (let i = 0; i < maxTries; i++) {
+      try {
+        return fn.apply(this, args);
+      } catch (error) {
+        lastError = error;
+        console.log(`Attempt ${i + 1} failed`);
+      }
+    }
+    
+    throw lastError;
+  };
+}
+
+// Example: Retry file read
+const readFileWithRetry = withRetry((filename) => {
+  const content = fs.readFileSync(filename, 'utf8');
+  if (!content) throw new Error('Empty file');
+  return content;
+}, 5);
+
+try {
+  const data = readFileWithRetry('config.json');
+  console.log('File read successfully');
+} catch (error) {
+  console.error('Failed to read file after retries');
+}
+```
+
+##### 9. oncePerTick(fn) - Once Per Event Loop Tick
+
+```javascript
+/**
+ * Runs function at most once per event loop tick.
+ * 
+ * Use cases:
+ * - Batched DOM updates
+ * - Render optimization
+ * - Event coalescing
+ */
+function oncePerTick(fn) {
+  let pending = false;
+  let args = null;
+  
+  return function(...newArgs) {
+    args = newArgs;
+    
+    if (!pending) {
+      pending = true;
+      
+      Promise.resolve().then(() => {
+        pending = false;
+        fn.apply(this, args);
+      });
+    }
+  };
+}
+
+// Example: Batch DOM updates
+const updateUI = oncePerTick(() => {
+  console.log('Updating UI (batched)');
+  renderComponent();
+});
+
+// Multiple calls in same tick result in single update
+updateUI();
+updateUI();
+updateUI();
+// Only renders once after current tick completes
+```
+
 ### Question: Implement debounce and throttle.
 
 Answer:
