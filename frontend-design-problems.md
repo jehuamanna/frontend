@@ -1,30 +1,10 @@
-\begin{titlepage}
-\centering
-\vspace*{3cm}
-
-{\Huge\bfseries Frontend System Design Problems\par}
-\vspace{1cm}
-{\Large Comprehensive Implementation Guide\par}
-\vspace{0.5cm}
-{\large Advanced Solutions to Real-World Frontend Challenges\par}
-
-\vfill
-
-{\Large\textbf{Author}\par}
-\vspace{0.5cm}
-{\LARGE Jehu Shalom Amanna\par}
-
-\vfill
-
-{\large Edition: 2025\par}
-\vspace{0.3cm}
-{\large Status: 7 Complete Implementations\par}
-
-\vspace{2cm}
-
-\end{titlepage}
-
-\newpage
+---
+title: "Frontend System Design Problems"
+subtitle: "Comprehensive Implementation Guide - Advanced Solutions to Real-World Frontend Challenges"
+author: "Jehu Shalom Amanna"
+date: "Edition 2025 - 7 Complete Implementations"
+titlepage: true
+---
 
 # Virtualized Infinite List with Dynamic Heights
 

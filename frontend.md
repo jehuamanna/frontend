@@ -1,3 +1,13 @@
+---
+title: "Frontend Engineering"
+subtitle: "Complete Reference Guide - From Fundamentals to Advanced Patterns"
+author: "Jehu Shalom Amanna"
+date: "2025 Edition"
+titlepage: true
+---
+
+
+
 # Chapter 1: HTML, CSS, JavaScript Fundamentals and Advanced Concepts
 
 ## HTML Fundamentals and Advanced Concepts
@@ -4291,7 +4301,7 @@ const newState2 = produce(state, draft => {
 });
 ```
 
-Higher-Order Functions:
+### Higher-Order Functions
 
 ```javascript
 // Function that returns function
@@ -4355,7 +4365,7 @@ const mapToNames = map(user => user.name);
 const result = mapToNames(filterActive(users));
 ```
 
-Currying and Partial Application:
+### Currying and Partial Application
 
 ```javascript
 // Currying: transform f(a, b, c) => f(a)(b)(c)
@@ -4414,7 +4424,7 @@ document.addEventListener('click', handleButtonClick((e) => {
 }));
 ```
 
-Function Composition:
+### Function Composition
 
 ```javascript
 // compose: right-to-left
@@ -4489,7 +4499,7 @@ const getUserWithPosts = pipeAsync(
 getUserWithPosts(123).then(console.log);
 ```
 
-Functors and Monads:
+### Functors and Monads
 
 ```javascript
 // Functor: type with map method
@@ -4630,9 +4640,9 @@ Promise.resolve(5)
   .then(console.log);  // 11
 ```
 
-Reactive Programming Patterns
+## Reactive Programming Patterns
 
-Observable Streams:
+### Observable Streams
 
 ```javascript
 // Basic Observable implementation
@@ -4731,7 +4741,7 @@ form$.subscribe(
 );
 ```
 
-Subject Types:
+### Subject Types
 
 ```javascript
 import { Subject, BehaviorSubject, ReplaySubject, AsyncSubject } from 'rxjs';
@@ -4781,7 +4791,7 @@ async.next(3);
 async.complete();  // A: 3 (only last value, only on complete)
 ```
 
-Backpressure Strategies:
+### Backpressure Strategies
 
 ```javascript
 import { interval } from 'rxjs';
@@ -4840,9 +4850,9 @@ fast$.pipe(
 });
 ```
 
-Declarative Programming Patterns
+## Declarative Programming Patterns
 
-State Machines:
+### State Machines
 
 ```javascript
 // Finite State Machine for form submission
@@ -4961,7 +4971,7 @@ service.send('NEXT');
 service.stop();
 ```
 
-Reactive Declarations:
+### Reactive Declarations
 
 ```javascript
 // Svelte's reactive declarations
@@ -5047,7 +5057,7 @@ store.toggleTodo(store.todos[0].id);  // Logs: Completed: 1/1
 */
 ```
 
-Component Design Patterns:
+### Component Design Patterns
 
 ```javascript
 // Container/Presentational Pattern
@@ -5265,7 +5275,7 @@ console.log('Script end');
 // setTimeout 2
 ```
 
-Implementing Promises from Scratch:
+### Implementing Promises from Scratch:
 
 ```javascript
 const PENDING = 'PENDING';
@@ -5577,7 +5587,7 @@ CustomPromise.reject('Error!')
   .then(console.log);  // Recovered
 ```
 
-Async/Await Implementation:
+### Async/Await Implementation
 
 Async/await is syntactic sugar over Promises, implemented using generators internally:
 
@@ -5662,7 +5672,7 @@ await parallel();  // ~1000ms (max of both)
 console.timeEnd('parallel');
 ```
 
-Generators In-Depth:
+### Generators In-Depth
 
 Generators are functions that can pause and resume, enabling powerful async patterns:
 
@@ -5871,7 +5881,7 @@ function* combined() {
 console.log([...combined()]);  // [1, 2, 3, 4, 5]
 ```
 
-Advanced Async Patterns:
+### Advanced Async Patterns
 
 ```javascript
 // Retry with exponential backoff
@@ -6179,7 +6189,7 @@ elements.forEach((el, i) => {
 }
 ```
 
-Performance Optimization Techniques:
+### Performance Optimization Techniques
 
 ```javascript
 // 1. Batch DOM updates
@@ -6409,7 +6419,7 @@ document.querySelectorAll('img[data-src]').forEach(img => {
 });
 ```
 
-Web Workers for Performance:
+### Web Workers for Performance
 
 ```javascript
 // main.js
@@ -6482,7 +6492,7 @@ worker.port.start();
 worker.port.postMessage('Hello');
 ```
 
-Memory Management:
+### Memory Management
 
 ```javascript
 // Memory leaks
