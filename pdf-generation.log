@@ -1,0 +1,6 @@
+Error producing PDF.
+! Dimension too large.
+\fb@put@frame ...p \ifdim \dimen@ >\ht \@tempboxa 
+                                                  \fb@putboxa #1\fb@afterfra...
+l.28273 \end{Shaded}
+

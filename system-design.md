@@ -1,897 +1,682 @@
-1. Virtualized Infinite List with Dynamic Heights
-Problem statement
-Implement a highly-performant, memory-efficient virtualized scrolling list component that can render millions of items. Items have variable heights (unknown until rendered). The component must support:
+# Frontend System Design Problems - Categorized Reference
 
-Smooth scrolling (no jank at 60fps target).
+**Total: 100 Problems organized into 8 categories**
 
-Windowing: only DOM nodes for visible items + small buffer are attached.
+This document categorizes 100 advanced frontend system design problems suitable for Principal/Staff-level engineering interviews.
 
-Jump to arbitrary index with correct scroll position.
+---
 
-Insertions/deletions at arbitrary positions while preserving scroll location.
+## Category 1: Performance & Optimization (18 problems)
 
-Correct behavior when container is resized or font size changes.
+Problems focused on rendering performance, memory efficiency, layout optimization, and achieving 60fps interactions.
 
-Constraints & deliverables
+### 1. Virtualized Infinite List with Dynamic Heights
+Build a memory-efficient list that renders millions of items with variable heights, smooth 60fps scrolling, and O(log n) index lookups using Fenwick trees.
 
-API: new VirtualList(container, {getItem}) with getItem(index) returning a DOM node or render function.
+**Topics**: Windowing, ResizeObserver, prefix-sum trees, layout thrashing prevention
 
-Provide scrollToIndex(i) and updateItem(index, newData) methods.
+### 7. Browser Layout Engine Optimization — Minimize Reflows
+Diagnose and fix layout thrashing, achieve 60fps on scroll/resize. Batch DOM operations, use `will-change`, and measure with Performance profiler.
 
-Memory: DOM nodes O(viewportSize + buffer).
+**Topics**: Forced synchronous layout, batching, compositing, paint pipeline
 
-Time: updates / scrolling must avoid O(n) on every frame.
+### 17. Tiny Animations Engine with Motion Planning
+Animation engine supporting 1000+ simultaneous transitions at 60fps using GPU compositing, RAF scheduling, and object pooling.
 
-Provide tests or usage demo and explain complexity.
+**Topics**: requestAnimationFrame, CSS transforms, Web Animations API, interruption semantics
 
-What to evaluate
+### 19. High-fidelity Pixel-Perfect Zoomable Canvas
+Zoomable canvas with billions-of-pixels virtual space, tiled rendering, progressive LOD, and vector object editing.
 
-Strategy for measuring unknown heights (e.g., binary search + cached heights, sentinel elements, progressive measurement).
+**Topics**: Canvas/SVG/WebGL tradeoffs, spatial indexing (quadtrees), tile streaming
 
-How to maintain mapping index ↔ offset efficiently (segment tree / Fenwick / binary indexed tree / bucketed averages).
+### 39. High-volume Real-time Charts with Backfill
+Render tens of thousands of streaming points per second with pause/backfill, zooming, and downsampling.
 
-Techniques to avoid layout thrashing (read/write separation, requestAnimationFrame).
+**Topics**: WebGL/Canvas, downsampling (LTTB), decimation, time-series buffering
 
-Handling inserting/removing items while preserving scroll offset (adjust offsets).
+### 62. Client-side Search Index for Rich Content
+Full-text search for 100k+ DOM nodes with stemming, stopwords, incremental updates, and highlighting.
 
-Rendering fallback for very dynamic heights.
+**Topics**: Inverted indexes, tokenization, web workers, memory optimization
 
-Follow-ups
+### 63. Predictive Layout Prefetcher
+Predict which elements will enter viewport and precompute layout/styles to reduce jank.
 
-Support sticky headers.
+**Topics**: IntersectionObserver, speculative rendering, layout pipeline
 
-Grouped lists and virtualization of groups.
+### 70. DOM-based Spreadsheet Renderer (Excel clone)
+Render 1M+ cells efficiently with frozen rows/columns, scrolling, formulas, and selections.
 
-Server-side rendering / hydration.
+**Topics**: Virtualization, canvas vs DOM tradeoffs, dependency graphs
 
-Topics to learn
+### 71. Performance Budget Enforcer in CI
+CI tool that blocks builds if bundle size/CLS/LCP exceed budget with auto-generated reports.
 
-Layout & reflow, forced synchronous layout, paint pipeline.
+**Topics**: CI/CD, Lighthouse API, thresholds, metrics pipelines
 
-windowing / virtualization patterns.
+### 72. Precise Input Latency Profiler
+Measure input-to-paint latency per component and visualize bottlenecks.
 
-Data structures: prefix-sum trees, Fenwick trees, segment trees.
+**Topics**: PerformanceObserver, event timing API, paint timing, flamecharts
 
-requestAnimationFrame, IntersectionObserver, ResizeObserver.
+### 80. DOM Layout Stress Simulator
+Generate pathological DOM layouts (deep nesting, massive reflows) and measure browser regressions.
 
-Memory & GC patterns in browsers.
+**Topics**: Benchmark harnesses, DOM APIs, layout thrash detection
 
-2. Build an Accessible, Keyboard-navigable Date Range Picker
-Problem statement
-Implement a reusable date-range picker UI (calendar popover) that:
+### 81. Incremental Static DOM Rehydration
+Rehydrate server-rendered DOM progressively, prioritizing visible elements.
 
-Supports keyboard navigation (arrow keys, PgUp/PgDn, Home/End, Enter/Escape).
+**Topics**: SSR hydration, priority queues, idle tasks, streaming
 
-Is fully accessible (WAI-ARIA roles and announcements for screen readers).
+### 90. Tiny Deterministic Scheduler for Heavy DOM Work
+Cooperative scheduler that slices large DOM tasks into micro-jobs while keeping UI responsive.
 
-Allows picking start & end date with clear focus behavior and visible focus ring.
+**Topics**: Task slicing, cooperative scheduling, Jest-friendly determinism
 
-Handles localization (first day of week, month names) and min/max dates.
+### 93. High-performance DOM Merging for Microfrontends
+DOM-merge protocol for independently-deployed microfrontends to coexist without conflicts.
 
-Efficiently renders months (lazy render), and supports keyboard + mouse + touch.
+**Topics**: Namespacing, CSS isolation, event containment, lifecycle contracts
 
-Constraints & deliverables
+### 98. Component-level Performance SLA Enforcement
+Monitor component render times in production and trigger fallbacks when exceeding SLAs.
 
-Expose onChange callback with {start, end}.
+**Topics**: Performance marks/measures, feature-flagged degradation, observability
 
-Provide aria attributes, live region updates for selection changes.
+### 99. Progressive Hydration with Interaction Tracing
+Hydrate components in priority order based on actual user interactions from server-rendered markup.
 
-Must not leak Global state; support multiple instances.
+**Topics**: Interaction tracing, priority queue hydration, idle-time scheduling
 
-Provide tests for keyboard flows and accessibility.
+### 100. Low-latency Image Editing Pipeline in Browser
+In-browser editor with nondestructive edits, undo history, and GPU-accelerated filters.
 
-What to evaluate
+**Topics**: WebGL/OffscreenCanvas, layer compositing, history/delta storage
 
-Semantic HTML & ARIA usage (grid role for calendar, aria-selected, aria-activedescendant).
+### 52. Latency-adaptive UI Throttle
+Scheduler that adapts UI update frequency based on measured input-to-display latency.
 
-Keyboard focus model and roving tabindex pattern.
+**Topics**: Latency measurement, adaptive algorithms, rAF cadence
 
-Handling edge cases (selecting reversed ranges, quick drags, disabled dates).
+---
 
-Localization / time-zone pitfalls.
+## Category 2: Accessibility (9 problems)
 
-Follow-ups
+Problems focused on ARIA, keyboard navigation, screen readers, and inclusive design.
 
-Add date range presets (Last 7 days) and keyboard activation.
+### 2. Accessible, Keyboard-navigable Date Range Picker
+Full keyboard navigation (arrows, PgUp/PgDn), ARIA roles, screen reader announcements, localization.
 
-Add range via shift+click and touch-compatible selection.
+**Topics**: WAI-ARIA, roving tabindex, Intl.DateTimeFormat, focus management
 
-Topics to learn
+### 11. High-performance Drag & Drop with Accessibility
+Drag-drop for thousands of items with keyboard reordering, multi-select, and accessible announcements.
 
-WAI-ARIA authoring practices, screen reader behavior.
+**Topics**: Pointer Events, aria-dropeffect/aria-grabbed, virtualization
 
-Roving tabindex, focus management.
+### 34. Large-scale Accessibility Audit Automation
+Programmatic SPA inspection beyond basic rules (focus order, landmarks, semantics) with prioritized fixes.
 
-Intl.DateTimeFormat and calendar localization.
+**Topics**: aXe rules, programmatic focus analysis, heuristic scoring
 
-Pointer/touch event differences.
+### 42. Universal Focus Management for Modal/Drawer System
+Manage focus trapping, restore, stacking, nested modals across Shadow DOM and iframes.
 
-Unit & accessibility testing (axe, jest + DOM Testing Library).
+**Topics**: Focus management, inert, tabindex, aria-hidden, portal focus
 
-3. DOM Diffing Engine (mini React reconcile)
-Problem statement
-Create a small DOM diffing/reconciliation engine that takes two lightweight virtual trees and updates the real DOM with minimal operations. The vDOM representation is: {type: 'div'|'text'|func', props: {...}, children: [...]}. It must:
+### 45. High-performance Accessibility Tree Sync
+Efficiently update accessibility tree for virtualized UI without O(n) updates.
 
-Reuse existing DOM nodes where possible.
+**Topics**: Accessibility tree model, ARIA, batching updates, role mappings
 
-Perform keyed list reconciliation (insert/move/delete).
+### 51. Composable ARIA Widgets Library (low-level primitives)
+Accessible, composable primitives (roving focus, combobox, tree, grid) with tiny runtime.
 
-Support functional components (pure functions returning vDOM).
+**Topics**: WAI-ARIA patterns, keyboard models, semantics-first APIs
 
-Minimize DOM operations and avoid full re-rendering.
+### 66. Optimized Accessibility Announcer Queue
+Live-region announcer that batches and prioritizes screen reader messages.
 
-Constraints & deliverables
+**Topics**: ARIA live regions, debouncing, priority queues, UX heuristics
 
-Implement render(vnode, container) and update(newVnode) semantics.
+### 78. Accessibility-First Rich Chart Component
+Accessible chart with full keyboard navigation, screen reader narration, zoom/pan controls.
 
-Provide examples demonstrating keyed list moves, nested components.
+**Topics**: SVG, ARIA roles for charts, focus rings, screen reader UX
 
-Include complexity analysis for common operations.
+### 92. Accessibility-aware Image Annotation Tool
+Image annotation with alt-text suggestions and semantic labels for assistive tech.
 
-What to evaluate
+**Topics**: Region mapping, alt-text heuristics, accessibility metadata
 
-Correct keyed reconciliation algorithm (O(n) common subsequence heuristics).
+---
 
-Handling of component lifecycle (mount/unmount).
+## Category 3: Security (10 problems)
 
-Avoiding unnecessary attribute updates and event re-binding.
+Problems focused on XSS prevention, CSP, sandboxing, authentication, and secure data handling.
 
-Handling of text node vs element node replacements.
+### 8. Secure HTML Sanitizer with CSP-aware Output
+Sanitize arbitrary HTML to prevent XSS while preserving safe markup. Allowlist tags/attributes, rewrite for CSP.
 
-Follow-ups
+**Topics**: XSS mitigation, CSP nonces/hashes, DOMParser, URL parsing
 
-Add batched updates and async scheduling (microtask/macrotask).
+### 21. Hierarchical Permission System in Client UI
+Client-side permission system with feature flags, role-based UI, remote policy updates.
 
-Support portals and fragments.
+**Topics**: Capability-based security, policy caches, encryption for sensitive flags
 
-Topics to learn
+### 32. Cross-origin Embedding & Secure Communication Layer
+Safely embed third-party widgets with controlled capabilities and message passing.
 
-Virtual DOM theory, diff/reconciliation algorithms (React’s heuristics).
+**Topics**: iframe sandbox, postMessage origin/security, proxy capabilities
 
-Keyed lists and move detection (LCS vs fastest O(n) heuristics).
+### 46. Inline Code Execution Sandbox for Educational App
+Secure in-browser sandbox for running JS/TS snippets with resource/time limits.
 
-Event delegation and synthetic events.
+**Topics**: iframe sandboxing, WebAssembly isolation, worker timeouts
 
-Batching updates, microtask queue (Promise) vs macrotask.
+### 49. End-to-end Encrypted Sync of User Settings
+Encrypt user settings before syncing so server never sees plaintext. Key rotation and multi-device sync.
 
-4. Event Delegation System & Custom Event Propagation
-Problem statement
-Design and implement a custom event system on top of the DOM that supports:
+**Topics**: WebCrypto API, key management, conflict resolution, secure backups
 
-Delegated event handlers with CSS-selector matching (attach once at root).
+### 64. Sandbox for Untrusted Widgets with CSS Isolation
+Framework for third-party widgets that can't break global styles or leak information.
 
-Event namespaces, priority, and the ability to stop propagation for delegated handlers without affecting native DOM propagation.
+**Topics**: Shadow DOM, iframe sandbox, CSS scoping, CSP
 
-Ability to delegate.on(root, 'click.ns1', '.btn', handler, {priority: 10}).
+### 68. Multi-origin Authentication in SPAs
+Frontend auth manager handling multiple origins (iframe-embedded apps) with token refresh and logout sync.
 
-Correct ordering and deterministic behavior across nested roots and dynamic DOM insertion.
+**Topics**: postMessage, SameSite cookies, CORS, OAuth 2.0
 
-Constraints & deliverables
+### 73. Secure Drag-drop Across Origins
+Drag-drop where source/target may be different origins, with no data leaks.
 
-Implement registration, matching, and dispatch algorithms.
+**Topics**: HTML5 drag-drop, DataTransfer security, origin isolation
 
-Explain complexity and memory footprint.
+### 83. Client-only Secure Secret Manager
+Client-side secret storage (API keys) with encryption-at-rest and no server exposure.
 
-Demonstrate correctness with nested, overlapping selectors and stopPropagation behavior.
+**Topics**: WebCrypto, localStorage/IndexedDB encryption, key rotation
 
-What to evaluate
+### 89. Secure WebAuthn Multi-factor Flow
+Frontend flow orchestrating password + WebAuthn device registration with fallback.
 
-Efficient selector matching (useEventPath + matches, caching).
+**Topics**: WebAuthn API, credential management, attestation, UX fallbacks
 
-Handling dynamic DOM (mutation observers or relying on event bubbling + matching).
+---
 
-Priority model and ordering guarantees.
+## Category 4: Architecture & Design Patterns (14 problems)
 
-Memory leaks avoidance on handler removal.
+Problems focused on system architecture, component patterns, state management, and code organization.
 
-Follow-ups
+### 3. DOM Diffing Engine (mini React reconcile)
+Diffing/reconciliation engine with keyed list reconciliation, functional components, minimal DOM operations.
 
-Add synthetic event features (persisted event objects, pooling).
+**Topics**: Virtual DOM, keyed reconciliation, lifecycle, batched updates
 
-Integrate with shadow DOM boundaries.
+### 4. Event Delegation System & Custom Event Propagation
+Custom event system with delegated handlers, CSS-selector matching, namespaces, and priority.
 
-Topics to learn
+**Topics**: Event propagation, composedPath(), selector matching, MutationObserver
 
-Event propagation phases, composedPath(), event.target, currentTarget.
+### 10. Pluggable Plugin System for UI Framework
+Plugin architecture with registration, lifecycle hooks, fault isolation, and hot-pluggable loading.
 
-CSS selector matching (Element.matches), performance considerations.
+**Topics**: Module systems, dynamic import, iframe sandboxing, versioning
 
-MutationObserver basics.
+### 20. Runtime Type Validation & Prop Contracts
+Runtime type-checking for components with shape diffs and minimal, actionable errors.
 
-Shadow DOM & event retargeting.
+**Topics**: Structural typing, JSON schema, babel plugin integration
 
-5. Diagnosing and Fixing Memory Leaks in a SPA
-Problem statement
-Given a sample single page app (you’ll be shown a codebase or snippet), find and fix memory leaks causing heap growth over time when navigating between views. Provide a report describing the root cause(s), patches, and a reproducible test harness that demonstrates the leak fix.
+### 27. Deterministic Replay Tool for UI Bugs
+Recorder/replayer capturing user events and DOM mutations to reproduce bugs.
 
-Constraints & deliverables
+**Topics**: Event serialization, MutationObserver, snapshot checkpoints
 
-Use Chrome DevTools/heap snapshots to identify detached DOM nodes, event listener leaks, closures holding large objects.
+### 28. Component Graph Hot-reload w/o State Loss
+Hot-reload that swaps component implementations while preserving local state and DOM.
 
-Provide code diffs that fix leaks.
+**Topics**: Module hot-swapping, stable instance identity, state serialization
 
-Provide automated repro (script or instructions) and metrics showing reduced retained memory.
+### 38. Zero-downtime Frontend Migration Strategy
+Rollout system for migrating to new framework incrementally with no downtime and rollback.
 
-What to evaluate
+**Topics**: Feature flags, routing, module federation, incremental hydration
 
-Use of DevTools allocation timeline, heap profiler, comparison snapshots.
+### 41. Reactive Formulas Engine (spreadsheet-like)
+Reactive engine where cells contain formulas, with cycle detection and dependency graph.
 
-Understanding of closure lifetimes, detached DOM nodes, RxJS subscriptions, and timers.
+**Topics**: Topological sort, incremental recomputation, cycle detection
 
-Applying correct fixes: removeEventListener, cancel timers, unsubscribe, null out references, weak refs.
+### 44. Efficient DOM Snapshot & Diff for Time Travel Debugging
+Serialized DOM + JS state snapshots for fast time-travel diffs.
 
-Follow-ups
+**Topics**: Serialization, incremental checkpoints, compression, sanitization
 
-Propose architecture patterns to minimize leaks (lifecycle hooks, centralized resource registry).
+### 65. State-machine Driven UI Workflow Engine
+Model complex UI flows (multi-step forms, wizards) as explicit state machines.
 
-Topics to learn
+**Topics**: Statecharts, persistence, serialization, guard conditions
 
-Chrome DevTools Memory Profiler (collection, comparison).
+### 69. Declarative Undo/Redo History for Any Component
+Global undo/redo manager where components register atomic actions.
 
-JS closures, GC roots, WeakMap/WeakRef.
+**Topics**: Command pattern, immutability, action logs, snapshots
 
-Common sources of leaks: DOM references, timers, event listeners, RxJS observables.
+### 85. Component Error Boundary System
+Reusable error boundary system for vanilla JS components with fallbacks.
 
-6. ContentEditable Rich-Text Editor: Undo/Redo & Cursor Preservation
-Problem statement
-Implement a content-editable rich text editor with:
+**Topics**: window.onerror, unhandledrejection, component lifecycle
 
-Bold/italic/underline, lists, and inline images.
+### 95. Structured Content Editor with Plugin API
+Document editor for nested content with plugin system for block types and validation.
 
-Robust undo/redo stack that preserves cursor/selection position across edits, even after operations that re-render DOM.
+**Topics**: Block model, schema validation, plugin lifecycle, collaborative hooks
 
-Paste sanitization (strip disallowed tags).
+### 37. Deterministic CSS Cascade Visualizer
+Show exact origin, specificity, and cascade order of every computed style.
 
-Efficient representation to support very large documents (~100k words) without huge reflows.
+**Topics**: CSS cascade, specificity, computed style internals, Shadow DOM
 
-Constraints & deliverables
+---
 
-API: execCommand(cmd), undo(), redo().
+## Category 5: Browser APIs & Internals (19 problems)
 
-Provide a strategy to record granular changes and map selection state back after DOM changes.
+Problems requiring deep knowledge of browser APIs, DOM manipulation, and platform capabilities.
 
-Demonstrate complex sequences (format, paste, delete, undo/redo).
+### 5. Diagnosing and Fixing Memory Leaks in a SPA
+Find and fix memory leaks using Chrome DevTools, identify detached DOM nodes and listener leaks.
 
-What to evaluate
+**Topics**: Heap profiler, closures, detached DOM, WeakMap/WeakRef
 
-Capture and restore of selection (Range, selection anchors) with node migrations.
+### 6. ContentEditable Rich-Text Editor: Undo/Redo & Cursor Preservation
+Rich text editor with robust undo/redo preserving cursor/selection across DOM changes.
 
-Change representation: operational transforms, diffs, or deltas.
+**Topics**: Selection/Range APIs, caret positioning, operational transforms
 
-Performance (batching edits, avoiding full innerHTML rewrites).
+### 9. Cross-window / WebWorker Shared State with Low-latency Updates
+Synchronize state between main thread, iframes, and Web Worker with eventual consistency.
 
-Follow-ups
+**Topics**: postMessage, BroadcastChannel, SharedArrayBuffer, IndexedDB
 
-Add collaborative editing (CRDT/OT basics).
+### 15. Advanced Input Masking & Validation Library
+Input masking for phone numbers, credit cards that preserves cursor and works with IME.
 
-Add mention/autocomplete with async suggestions.
+**Topics**: Composition events, Selection API, Unicode normalization
 
-Topics to learn
+### 22. Browser-native PDF Viewer with Annotations
+In-browser PDF viewer with panning, zooming, text selection, and persistent annotations.
 
-Selection and Range APIs, getSelection(), caret positioning.
+**Topics**: PDF.js, coordinate mapping, text layer mapping, storage sync
 
-Serializing selection positions (path + offset), handling node identity changes.
+### 23. Precise Time/Alarm Scheduler in Web (multi-tab)
+Scheduling API that fires callbacks at precise times across tabs with leader election.
 
-Deltas/operational transform/CRDT basics.
+**Topics**: BroadcastChannel, leader election, Visibility API, timer clamping
 
-Clipboard API & sanitization.
+### 24. Custom Layout Engine (Constraint-based)
+Constraint-based layout engine (like Auto Layout) that solves constraints efficiently.
 
-7. Browser Layout Engine Optimization — Minimize Reflows
-Problem statement
-You’re given a slow page that performs multiple DOM updates per frame, causing 30fps. Propose and implement optimizations to reach 60fps on scroll and resize interactions. Provide before/after metrics (frame timings), and explain each change’s effect on layout/paint.
+**Topics**: Cassowary solver, constraint propagation, performance engineering
 
-Constraints & deliverables
+### 29. Multi-language Right-to-left Layout Engine
+UI layout supporting mixed LTR/RTL content with bidi reordering and mirrored icons.
 
-Identify code paths causing forced synchronous layouts (e.g., reading layout after writes).
+**Topics**: Unicode Bidirectional Algorithm, CSS direction, mirroring
 
-Provide a set of patch changes and performance measurements.
+### 33. Declarative Gesture Recognition Library
+Gesture recognition for pinch/rotate/complex gestures across touch/mouse/pen.
 
-Explain tradeoffs and maintainability concerns.
+**Topics**: Pointer Events, gesture state machines, hit testing, passive listeners
 
-What to evaluate
+### 48. Adaptive Input Pipeline for IME-heavy Languages
+Controls behaving correctly across composition sequences (IME) and mobile keyboards.
 
-Ability to detect layout thrashers (repeated read/write cycles).
+**Topics**: Composition events, input event ordering, caret handling
 
-Use of batching, will-change, transform vs top/left, compositing layers.
+### 61. DOM Snapshot Compression for Error Reporting
+Capture DOM snapshots on error using structural hashing and compression.
 
-Use of requestAnimationFrame, transform: translateZ(0), but discuss costs.
+**Topics**: MutationObserver, DOM serialization, compression, privacy filters
 
-Follow-ups
+### 67. Font Loading & FOUT/FOIT Mitigation
+Font loader avoiding flashes of invisible text while balancing layout shifts.
 
-Explain when will-change hurts performance.
+**Topics**: Font Loading API, fallback stacks, layout stability
 
-Handling of large DOM trees and paint cost reduction (containment, contain CSS).
+### 75. Streaming Form Data Validator
+Validate form fields in real-time using streaming server responses.
 
-Topics to learn
+**Topics**: Streams API, async validation, debounce, AbortController
 
-Reflow/relayout, repaint, composite layers.
+### 82. DOM Virtual Filesystem Explorer
+Filesystem tree with millions of files/folders, lazy-load, search/filter, keyboard nav.
 
-Browser rendering pipeline and paint profiler.
+**Topics**: Virtualization, async loading, keyboard UX, tree widgets
 
-CSS containment, compositing, GPU vs CPU painting.
+### 86. Deterministic Cross-browser Rendering Diff Tool
+Load page in multiple browsers and highlight pixel/layout diffs with CSS/HTML/JS blame.
 
-Tools: Chrome Performance, Paint Profiler.
+**Topics**: Screenshot diffing, CSSOM differences, cross-browser quirks
 
-8. Implement a Secure HTML Sanitizer with CSP-aware Output
-Problem statement
-Create a sanitization library that takes arbitrary HTML and returns safe HTML for injection into innerHTML, preventing XSS while preserving safe markup (links, formatting). Additionally, the sanitizer must:
+### 91. Adaptive Layouts for Foldable / Multi-screen Devices
+UI components adapting to hinge/fold states and multi-screen layouts.
 
-Respect an allowlist of tags/attributes, and disallow javascript: URIs, data: in sensitive contexts.
+**Topics**: CSS viewport segments API, window segments, fold-aware UX
 
-Rewrite resource URLs to be CSP-compatible (e.g., convert inline scripts to external via nonce if configured).
+### 96. Cross-platform Native-like Tactile Feedback Layer
+Abstract haptic & audio feedback layer mapping UI actions to device sensations.
 
-Provide an API to integrate with a Content Security Policy (CSP) that forbids certain inline styles/scripts.
+**Topics**: Vibration API, platform capability detection, fallbacks
 
-Constraints & deliverables
+### 54. Dynamic Accessibility Role Inference Engine
+Infer missing semantics for legacy markup and auto-inject ARIA safely.
 
-No use of eval. Provide tests showing typical attack vectors blocked and allowed content preserved.
+**Topics**: Heuristics, ML-assisted suggestions, false positives mitigation
 
-Explain tradeoffs for sanitizing vs CSP vs server-side escaping.
+### 87. Resource-aware Image CDN Client
+Client-side image selection based on DPR, viewport, user motion preference, and quota.
 
-What to evaluate
+**Topics**: srcset/sizes auto-generation, DPR handling, save-data
 
-Understanding of DOMParser edge cases, attribute canonicalization, URL parsing.
+---
 
-Handling of exotic vectors: event handler attributes, srcdoc, <svg> with script, CSS url() values.
+## Category 6: Data Synchronization & Offline (6 problems)
 
-Safe decoding of HTML entities to avoid bypasses.
+Problems focused on offline-first architecture, conflict resolution, multi-tab sync, and data persistence.
 
-Follow-ups
+### 13. Robust Offline-first Sync with Conflict Resolution
+Offline-first data layer for todo app with optimistic UI and CRDT-based conflict resolution.
 
-Add sanitizer hooks for custom component embedding.
+**Topics**: Service Worker, Background Sync, IndexedDB, CRDTs, retries
 
-Discuss server-side vs client-side sanitization tradeoffs.
+### 16. Secure File Upload Widget with Chunking & Resume
+Large file uploader with chunking, resume support, progress across tabs, client-side hashing.
 
-Topics to learn
+**Topics**: fetch streaming, Service Worker, BroadcastChannel, tus protocol
 
-XSS attack classes and mitigations.
+### 30. Event Storming Resilience — Backpressure & Sampling
+Client-side telemetry pipeline with sampling/backpressure, offline persistence, bounded memory.
 
-CSP headers, nonces, and hashes.
+**Topics**: Token bucket, batching, IndexedDB, privacy-aware sampling
 
-DOMParser, URL parsing, attribute canonicalization, SVG attack surface.
+### 74. DOM-based Collaborative Whiteboard
+Collaborative whiteboard with strokes syncing in real time using CRDTs for vector graphics.
 
-Security testing (fuzzing inputs).
+**Topics**: Canvas/SVG, WebRTC/WebSocket, CRDT, delta compression
 
-9. Cross-window / WebWorker Shared State with Low-latency Updates
-Problem statement
-Design a system that synchronizes a piece of application state between the main thread, multiple iframes, and a Web Worker with:
+### 77. Deterministic Multi-tab State Sync with Leader Election
+Keep app state consistent across tabs, elect leader for expensive operations.
 
-Low latency updates and eventual consistency.
+**Topics**: BroadcastChannel, leader election algorithms, storage events
 
-A mechanism to avoid thrashing when many updates occur concurrently.
+### 79. Multi-stage Progressive Web App Bootstrapping
+PWA startup flow: shell → skeleton UI → cached content → live content.
 
-A small API for subscribe/publish with conflict resolution.
+**Topics**: App shell model, hydration, SW caching, skeleton screens
 
-Constraints & deliverables
+---
 
-Use postMessage, BroadcastChannel, SharedArrayBuffer (where available), or IndexedDB as fallback.
+## Category 7: Advanced UI Components & Rendering (24 problems)
 
-Provide architecture diagram, and prototype demonstrating update flow and conflict handling.
+Problems focused on complex interactive components, rendering techniques, and visual effects.
 
-Discuss security (origin checks) and cross-origin limitations.
+### 12. Predictive Pre-rendering / Speculative Fetching Layer
+Speculative loader that prefetches resources based on user behavior predictions.
 
-What to evaluate
+**Topics**: link rel=prefetch/preload, navigator.connection, rate-limiting
 
-Choosing appropriate primitives for use-cases (BroadcastChannel for same-origin tabs, SharedArrayBuffer for high throughput).
+### 14. Fine-grained CSS-in-JS Engine
+CSS-in-JS engine with atomic classes, SSR/hydration, deduplication, minimal runtime.
 
-Backpressure and aggregation strategies (debounce, coalesce, operation batching).
+**Topics**: CSSOM, SSR hydration tokens, specificity, critical CSS
 
-Handling worker termination and reconnection.
+### 18. Large-scale Form Engine with Conditional Logic & Autosave
+Form engine rendering from JSON schema with conditional fields and autosave.
 
-Follow-ups
+**Topics**: JSON Schema, validation, debounce, optimistic UI, IndexedDB
 
-Add encryption for cross-origin messaging via postMessage.
+### 25. Progressive Image Loading with Perceptual Metrics
+Progressive loading selecting quality based on viewport, network, and saliency.
 
-Add CRDT-based approach for true multi-writer editing.
+**Topics**: IntersectionObserver, saliency heuristics, LQIP, responsive images
 
-Topics to learn
+### 26. Shadow DOM + CSS Isolation Framework
+UI component system using Shadow DOM with theme propagation and cross-shadow styling.
 
-postMessage, BroadcastChannel, SharedArrayBuffer, Atomics.
+**Topics**: Shadow DOM, ::part/::slotted, CSS custom properties
 
-Web Worker lifecycle, message serialization cost.
+### 31. Fast Diff/Highlight Changes for Code Editor
+Diff algorithm for large documents (100k+ lines) with incremental updates.
 
-CRDTs, conflict resolution strategies, IndexedDB for persistence.
+**Topics**: Myers diff, patience diff, suffix arrays, chunking
 
-10. Design & Implement a Pluggable Plugin System for a UI Framework
-Problem statement
-Design a robust plugin architecture for a frontend UI framework so third-party plugins can:
+### 36. Composable Gesture-driven Canvas Editor
+Vector editor composing gestures into commands with undo/redo and precise hit-testing.
 
-Register UI components, lifecycle hooks, routes, and reducers.
+**Topics**: Pointer events, transform math, spatial indexing, command pattern
 
-Be isolated so faulty plugins cannot break the main app (fault containment).
+### 40. Privacy-preserving Analytics SDK
+Analytics SDK with differential-privacy guarantees and on-device aggregation.
 
-Be hot-pluggable (load/unload at runtime) with dependency versioning and capability negotiation.
+**Topics**: Differential privacy, aggregation, batching, privacy budgets
 
-Constraints & deliverables
+### 43. Pluggable Theming System with A/Bable Runtime
+Runtime theming with CSS variables, on-the-fly switching, and A/B experiment hooks.
 
-Define plugin API surface, registration process, and lifecycle (install, mount, unmount).
+**Topics**: CSS custom properties, SSR theme hydration, feature flags
 
-Implement sandboxing (e.g., iframe-based or VM-like isolation) and explain tradeoffs.
+### 50. Composable Animation Keyframe Compiler
+Compiler taking motion specs and outputting performant CSS/Web Animations API usage.
 
-Demonstrate how plugin state is namespaced and how plugin errors are handled.
+**Topics**: Web Animations API, easing curves, GPU properties
 
-What to evaluate
+### 53. Universal Input Abstraction for Game-like UIs
+Input layer standardizing mouse/keyboard/touch/gamepad/VR with mapping and rebinding.
 
-Versioning strategy and dependency resolution.
+**Topics**: Gamepad API, pointer capture, input event normalization
 
-Fault-isolation: communication channels, timeouts, circuit-breakers.
+### 55. Composable Streaming Parser for Large HTML Documents
+Streaming HTML parser progressively rendering huge streams without full DOM materialization.
 
-Security risks of third-party code and mitigation strategies.
+**Topics**: Streaming parsing, incremental rendering, backpressure
 
-Global state containment and deterministic unmounting.
+### 56. Predictive Form Autofill with Privacy Controls
+Smart autofill predicting form intent, handling conditional fields, respecting privacy.
 
-Follow-ups
+**Topics**: Heuristics, privacy-by-default, input heuristics, secure storage
 
-Enable plugins to add routes and lazy-load assets securely.
+### 58. High-throughput Clipboard Manager for Complex Data
+Clipboard manager supporting multiple formats, incremental paste previews, security.
 
-Marketplace model and permission prompts.
+**Topics**: Clipboard API, MIME types, paste sanitization, async clipboard
 
-Topics to learn
+### 59. Graphical Diff & Merge UI for Structured Docs
+Visual diff/merge tool for nested JSON/DOM-like documents with conflict resolution UI.
 
-Module systems, dynamic import, CSP implications.
+**Topics**: Tree-diffing, merge algorithms, UX for conflicts, CRDT vs OT
 
-Iframe sandboxing, postMessage APIs, proxied communication.
+### 76. Dynamic CSS Container Queries Polyfill
+Container query polyfill that re-renders elements when containers resize.
 
-Feature flags, capability-based permissions, circuit breakers.
+**Topics**: ResizeObserver, mutation batching, layout dependencies
 
-Packaging & semver strategies.
+### 88. Declarative Reactive Transitions Language
+DSL describing transitions between UI states, compiled into efficient runtime code.
 
-Quick study plan / common topics across all problems
-Deep DOM APIs: getComputedStyle, offsetHeight, getBoundingClientRect, Range & Selection, MutationObserver, ResizeObserver.
+**Topics**: Parser/compiler, animation scheduling, Web Animations API
 
-Browser internals: layout, paint, composite, event loop (microtasks vs macrotasks), GC.
+### 94. Continuous Interaction Recorder for UX Research
+Privacy-aware recorder logging interactions, timing, and state transitions for analysis.
 
-Performance tooling: Chrome DevTools (Performance, Memory, Rendering), Lighthouse.
+**Topics**: Event sampling, privacy redaction, chunked uploads
 
-Accessibility: WAI-ARIA patterns, screen readers, keyboard interactions.
+### 97. Efficient Multi-lingual Runtime Intl Loader
+Load and switch i18n locale data at runtime with minimal bundle cost.
 
-Security: XSS classes, CSP, sandboxing.
+**Topics**: Chunked locale data, ICU message handling, pluralization
 
-Data structures & algorithms: trees, prefix sums, Fenwick, LRU caches, sequences/deltas.
+### 35. Cross-browser Feature Detection & Polyfill Orchestration
+Detect feature availability, lazy-load polyfills only when needed, ensure ordering.
 
-Concurrency & offline: Web Workers, SharedArrayBuffer, BroadcastChannel, IndexedDB.
+**Topics**: Feature detection, dynamic import, performance & caching
 
-Engineering leadership: API design, backward compatibility, observability, test strategy, risk tradeoffs.
+### 84. Predictive Prefetch with ML Integration
+Train on-device ML model to predict next navigation and prefetch assets.
 
-If you want, I can:
+**Topics**: TensorFlow.js, caching strategies, network info API
 
-Convert any one of these into a full interview prompt with starter code, a rubric, and sample solutions (slow, medium, optimized).
+### 57. Large-scale DOM Mutation Stress Tester
+Generate pathological DOM mutations to stress-test layout/GC and detect regressions.
 
-Or produce an exercise kit (starter repo + tests + evaluation checklist) for a specific problem.
+**Topics**: MutationObserver, synthetic workloads, perf instrumentation
 
-Which one should I expand into a full interview exercise first?
+### 47. Safe Dynamic Script Loader with Dependency Graph
+Runtime loading third-party scripts with dependencies, isolation, timeouts, retry.
 
-You said:
-I need much more problems 
-ChatGPT said:
-Nice — got it. Below are 20 more hard frontend / DOM problems (principal/staff level). Each entry gives a focused problem statement, minimal deliverables/constraints, and the topics to learn to master it. I kept each one compact so you can scan quickly and pick the ones you want expanded into full interview prompts, starter code, or rubrics.
+**Topics**: dynamic import, script tags vs modules, CSP, error handling
 
-11. High-performance Drag & Drop with Accessibility
-Problem: Build a drag-and-drop list supporting thousands of items with smooth dragging, keyboard reordering, multi-select drag, and accessible announcements for screen readers. Must avoid expensive layout thrashing and support touch + mouse + keyboard.
-Deliverables: onDragStart, onDrop, keyboard reorder API, accessible live-region updates, example with 10k items.
-Topics: Pointer Events, dragstart vs Pointer API, hit-testing, virtualization, aria-dropeffect/aria-grabbed, assistive announcements, avoid layout thrash.
+### 60. Composable ARIA Widgets Library
+Low-level accessible primitives that are composable and themeable.
 
-12. Predictive Pre-rendering / Speculative Fetching Layer
-Problem: Implement a client-side speculative loader that prefetches resources (HTML, data, images) based on user behavior predictions while respecting bandwidth, battery, and privacy.
-Deliverables: Prediction heuristic, quota/backoff controls, devtools-visible metrics.
-Topics: link rel=prefetch/preload, navigator.connection (save-data), heuristics, rate-limiting, privacy considerations.
+**Topics**: WAI-ARIA patterns, keyboard models, test-driven accessibility
 
-13. Robust Offline-first Sync with Conflict Resolution
-Problem: Create an offline-first data layer for a todo app that syncs with server when online, supports optimistic UI, and resolves conflicts using a last-writer-wins and CRDT hybrid.
-Deliverables: Sync protocol, undo/redo across offline/online, conflict demo.
-Topics: Service Worker, Background Sync, IndexedDB, CRDT basics, retries/exponential backoff.
+---
 
-14. Fine-grained CSS-in-JS Engine
-Problem: Implement a CSS-in-JS engine that generates atomic CSS classes, supports server-side rendering/hydration, deduplication, theming, and minimal runtime cost.
-Deliverables: API for css({ color }), SSR token generation, runtime dedupe.
-Topics: CSSOM, performance of style insertion, SSR hydration tokens, specificity, style scoping, critical CSS.
+## Category 8: Developer Experience & Tooling (6 problems)
 
-15. Advanced Input Masking & Validation Library
-Problem: Build an input masking library for international phone numbers, credit cards, and date inputs that preserves cursor, supports undo, and works with composition events (IME).
-Deliverables: API to attach mask, tests for caret behavior and IME composition.
-Topics: Composition events, Selection API, Unicode normalization, input event order, regex performance.
+Problems focused on debugging, testing, monitoring, build tools, and development workflows.
 
-16. Secure File Upload Widget with Chunking & Resume
-Problem: Implement a file uploader that uploads large files in chunks with resume support, progress across tabs, client-side hashing for dedup, and secure upload token refresh.
-Deliverables: Chunking protocol, resume demo, token refresh flow.
-Topics: fetch streaming, Service Worker, BroadcastChannel, resumable upload protocols (tus), content hashing (SHA-256), CORS & auth.
+### 35. Cross-browser Feature Detection & Polyfill Orchestration
+System detecting features and lazy-loading polyfills with dependency management.
 
-17. Tiny Animations Engine with Motion Planning
-Problem: Create an animation engine that can run 1000+ simultaneous UI transitions at 60fps using GPU compositing and supports interruption, easing, and timeline control.
-Deliverables: Animation API, example with many moving elements, interruption semantics.
-Topics: requestAnimationFrame, CSS transforms vs layout-affecting properties, composing animations, Web Animations API.
+**Topics**: Feature detection patterns, dynamic import, CSP considerations
 
-18. Large-scale Form Engine with Conditional Logic & Autosave
-Problem: Build a form engine that renders dynamic forms from JSON schema, supports conditional fields, autosave with debounce and offline queue, and incremental validation.
-Deliverables: Schema format, autosave queue, validation hooks.
-Topics: JSON Schema, validation strategies, debounce vs throttle, optimistic UI, IndexedDB for queue.
+### 47. Safe Dynamic Script Loader with Dependency Graph
+Load third-party scripts with declared dependencies, isolation, and graceful degradation.
 
-19. High-fidelity Pixel-Perfect Zoomable Canvas
-Problem: Implement a zoomable, pannable canvas (SVG/Canvas/WebGL) that supports billions-of-pixels virtual space with tiled rendering and progressive LOD.
-Deliverables: Smooth pan/zoom, tile loader, editing of vector objects with hit-testing.
-Topics: Canvas vs SVG vs WebGL tradeoffs, spatial indexing (quadtrees), tile streaming, device pixel ratio handling.
+**Topics**: dynamic import, script tags vs modules, error handling
 
-20. Runtime Type Validation & Prop Contracts for UI Components
-Problem: Build a runtime type-checking layer for components that validates props/contracts at runtime in dev, supports shape diffs, and reports minimal, actionable errors.
-Deliverables: Lightweight runtime validator with error formatting, optional instrumentation hooks.
-Topics: Structural typing, JSON schema, babel plugin integration for dev-only instrumentation, performance gating.
+### 57. Large-scale DOM Mutation Stress Tester
+Harness generating pathological DOM mutations to stress-test and auto-detect regressions.
 
-21. Hierarchical Permission System in Client UI
-Problem: Design a client-side permission system for a large app enabling feature flags, role-based UI adjustments, and remote policy updates without a full reload.
-Deliverables: Permission DSL, policy refresh mechanism, secure storage, graceful degradation.
-Topics: Capability-based security, policy caches, caching/staleness, encryption for sensitive flags.
+**Topics**: MutationObserver, synthetic workloads, stability metrics
 
-22. Browser-native PDF Viewer with Annotations
-Problem: Build an in-browser PDF viewer supporting panning, zooming, text selection, and persistent annotations that sync to server.
-Deliverables: Annotation model, highlight/notes, export/import annotations.
-Topics: PDF.js integration, coordinate mapping across scales, text layer mapping, storage sync.
+### 71. Performance Budget Enforcer in CI
+CI tool running Lighthouse/DevTools audits, blocking builds on budget violations.
 
-23. Precise Time/Alarm Scheduler in Web (multi-tab)
-Problem: Provide a scheduling API that fires JS callbacks at precise wall-clock times across multiple tabs (one master elects, others subscribe) and survives tab crashes.
-Deliverables: Election algorithm, fallback strategies, alarm accuracy analysis.
-Topics: BroadcastChannel, leader election, Visibility API, timers/clamping, Service Worker alarms.
+**Topics**: CI/CD, Lighthouse API, thresholds, metrics pipelines
 
-24. Custom Layout Engine (Constraint-based)
-Problem: Build a small constraint-based layout engine (like Auto Layout) in JS that lays out UI nodes according to constraints and solves them efficiently.
-Deliverables: Constraint solver, example UIs with dynamic resizing.
-Topics: Cassowary solver basics, constraint propagation, performance engineering, integration with DOM.
+### 72. Precise Input Latency Profiler
+Profiler measuring input-to-paint latency per component with visualization.
 
-25. Progressive Image Loading with Perceptual Metrics
-Problem: Implement progressive loading strategy that selects image quality based on viewport, network, and perceptual saliency (e.g., faces in view).
-Deliverables: Saliency detector, adaptive loader, metrics showing perceived quality vs bandwidth.
-Topics: IntersectionObserver, lightweight on-device saliency heuristics, LQIP, responsive images srcset/sizes.
+**Topics**: PerformanceObserver, event timing API, flamecharts
 
-26. Shadow DOM + CSS Isolation Framework
-Problem: Architect a UI component system using Shadow DOM that supports theme propagation, CSS custom properties fallback, and cross-shadow-styling primitives.
-Deliverables: Theming API, cross-shadow focus management, style overrides.
-Topics: Shadow DOM, ::part/::slotted, CSS custom properties, style scoping.
+### 84. Predictive Prefetch with ML Integration
+On-device ML model predicting next navigation for asset prefetching.
 
-27. Deterministic Replay Tool for UI Bugs
-Problem: Build a recorder/replayer that captures user events and DOM mutations to deterministically reproduce UI bugs (with serialization efficient enough for long sessions).
-Deliverables: Recorder, replayer UI, compression strategy.
-Topics: Event serialization, DOM mutationObserver, snapshot checkpoints, privacy/data scrubbing.
+**Topics**: TensorFlow.js, caching strategies, privacy considerations
 
-28. Component Graph Hot-reload w/o State Loss
-Problem: Implement hot-reload for a component system that can swap component implementations at runtime while preserving local state and DOM where possible.
-Deliverables: State migration strategy, module replacement demo.
-Topics: Module hot-swapping, stable instance identity, serialization of closures/state, version migration.
+---
 
-29. Multi-language Right-to-left Layout Engine
-Problem: Implement UI layout that supports mixed LTR and RTL content, bidi reordering, mirrored icons, and test cases across languages including Arabic/Hebrew.
-Deliverables: Rendering engine handling embedded LTR runs, mirroring rules.
-Topics: Unicode Bidirectional Algorithm, CSS direction, mirroring images, localized formatting.
+## Additional High-Value Problems (Bonus)
 
-30. Event Storming Resilience — Backpressure & Sampling
-Problem: Design a client-side telemetry pipeline that tolerates bursty event generation, applies sampling/backpressure, persists during offline, and guarantees eventual delivery with bounded memory.
-Deliverables: Sampling strategy, persistent queue, metrics, graceful drop policy.
-Topics: Rate-limiting algorithms (token bucket), batching, IndexedDB, privacy-aware sampling.
+### 101. WebAssembly-based Virtual Scrolling Engine
+Build ultra-high-performance list virtualization using WebAssembly for index calculations, supporting 10M+ items with sub-millisecond query times.
 
-31. Fast Diff/Highlight Changes for Code Editor
-Problem: Implement an algorithm that diffs two large text documents (100k+ lines) in-browser and highlights changed regions with an O(n) or near-linear approach.
-Deliverables: Diff algorithm, incremental update when small edits applied.
-Topics: Myers diff tradeoffs, patience diff, suffix arrays, chunking strategies.
+**Topics**: WASM, SharedArrayBuffer, Rust/C++ compilation, JS interop
 
-32. Cross-origin Embedding & Secure Communication Layer
-Problem: Build a library to safely embed third-party widgets in iframes with controlled capabilities (DOM access denied), message passing with capability checks and fine-grained API surface.
-Deliverables: Sandbox patterns, message protocol with auth, revocation flows.
-Topics: iframe sandbox attributes, postMessage origin/security, proxy capabilities, CSP.
+### 102. Distributed Tracing for Frontend Performance
+Implement OpenTelemetry-compatible tracing for frontend with automatic instrumentation, trace propagation, and sampling strategies.
 
-33. Declarative Gesture Recognition Library
-Problem: Implement a gesture recognition system supporting pinch/rotate/complex gestures declaratively, works across touch/mouse/pen, and coexists with native browser gestures.
-Deliverables: Gesture DSL, recognizer composability, preventDefault semantics.
-Topics: Pointer Events, gesture state machines, hit testing, passive listeners.
+**Topics**: OpenTelemetry, distributed tracing, RUM, sampling
 
-34. Large-scale Accessibility Audit Automation
-Problem: Create a tool that programmatically inspects a complex SPA for accessibility issues beyond basic rules (focus order, landmark usage, semantic misuses) and suggests prioritized fixes.
-Deliverables: Audit runner, rule engine, prioritized report.
-Topics: Accessibility heuristics, aXe rules, programmatic focus analysis, heuristic scoring.
+### 103. CSS Grid Layout Engine from Scratch
+Implement CSS Grid specification algorithm from scratch, handling auto-placement, spanning, and alignment.
 
-35. Cross-browser Feature Detection & Polyfill Orchestration
-Problem: Build a system that detects feature availability precisely (not user-agent sniffing), lazy-loads polyfills only when needed, and ensures ordering and minimal bundle impact.
-Deliverables: Feature detection registry, polyfill loader with dependencies.
-Topics: Feature detection patterns, dynamic import, performance & caching, CSP considerations.
+**Topics**: CSS Grid spec, layout algorithms, constraint solving
 
-Want me to:
+### 104. Cross-framework Component Wrapper System
+Create adapters allowing React components to work in Vue/Angular/Svelte and vice versa with proper lifecycle mapping.
 
-Expand any of these into a full interview exercise (starter repo, test suite, rubric, hints)?
+**Topics**: Framework internals, component lifecycle, event systems
 
-Produce a 30–60 minute take-home or full-day onsite variant for a specific problem?
+### 105. AI-powered Code Refactoring Assistant
+Build browser-based tool using ASTs to suggest and apply safe refactorings with impact analysis.
 
-Generate sample solutions (simple / optimized) for a chosen problem?
+**Topics**: AST parsing, Babel/TypeScript compiler, static analysis
 
-Pick one (or list a few) and I’ll convert it into a ready-to-use interview kit.
+---
 
-You said:
-Are there still more unique problems? Or 
-ChatGPT said:
+## Problem Selection Guide
 
-Thought for a couple of seconds
-Yes — absolutely. There are tons more unique, high-signal problems for Principal / Staff frontend engineers. Below I’ll give you 25 more distinct, high-difficulty problems (short statement + what to measure + core topics to study). If you want, I can immediately expand any single one into a full interview kit (starter repo, tests, rubric, sample solution).
+**For Performance-focused Interviews**: Problems 1, 7, 17, 19, 39, 70, 71, 72, 90, 98, 99, 100
 
-36–60 — More unique, hard frontend / DOM problems
-Composable Gesture-driven Canvas Editor
-Build a vector editor that composes gestures (drag, double-tap, long-press) into commands, with undo/redo and precise hit-testing on transformed objects.
-Topics: Pointer events, transform math, spatial indexing, command pattern, selection handles.
+**For Accessibility-focused Interviews**: Problems 2, 11, 34, 42, 45, 51, 66, 78, 92
 
-Deterministic CSS Cascade Visualizer
-Create a tool that shows — for any element — the exact origin, specificity and cascade order of every computed style, including UA, user, author, inline, !important, and shadow roots.
-Topics: CSS cascade, specificity, computed style internals, Shadow DOM.
+**For Security-focused Interviews**: Problems 8, 21, 32, 46, 49, 68, 73, 83, 89
 
-Zero-downtime Frontend Migration Strategy
-Design and prototype a rollout system that allows migrating parts of a legacy app to a new framework incrementally with no downtime and rollback support.
-Topics: Feature flags, routing, module federation, incremental hydration, data migration.
+**For Architecture-focused Interviews**: Problems 3, 4, 10, 20, 27, 28, 38, 41, 65, 69, 85, 95
 
-High-volume Real-time Charts with Backfill
-Implement charts that render tens of thousands of streaming points per second, support pause/backfill, zooming, and downsampling with visual fidelity.
-Topics: WebGL/Canvas, downsampling (LTTB), decimation, time-series buffering.
+**For Full-stack Frontend Interviews**: Problems 5, 6, 13, 16, 18, 30, 49, 74, 77, 79
 
-Privacy-preserving Analytics SDK
-Create an analytics SDK that guarantees differential-privacy-like guarantees on client-side aggregation and supports on-device aggregation before upload.
-Topics: Differential privacy basics, aggregation, batching, privacy budgets, local-first metrics.
+**For Framework Authors/Library Builders**: Problems 3, 4, 10, 14, 20, 26, 28, 37, 50, 85, 103, 104
 
-Reactive Formulas Engine (spreadsheet-like)
-Build a reactive engine where cells contain formulas depending on other cells, supporting cycles detection, dependency graph, and batch recompute.
-Topics: Topological sort, incremental recomputation, cycle detection, expression parsing.
+**For Principal/Staff-level Candidates**: Any 3-4 problems from different categories showing breadth
 
-Universal Focus Management for Modal/Drawer System
-Design a library that manages focus trapping, restore, stacking, nested modals and portal patterns across Shadow DOM and iframes.
-Topics: Focus management, inert, tabindex, aria-hidden patterns, portal focus edge-cases.
+---
 
-Pluggable Theming System with A/Bable Runtime
-Implement runtime theming supporting CSS variables, classless fallbacks, on-the-fly theme switching, and A/B experiment hooks.
-Topics: CSS custom properties, SSR theme hydration, feature flags, perceived flicker avoidance.
+## Study Plan by Difficulty
 
-Efficient DOM Snapshot & Diff for Time Travel Debugging
-Produce serialized snapshots of DOM + JS state cheaply and allow fast time-travel diffs to reproduce earlier app states.
-Topics: Serialization, incremental checkpoints, compression, sanitization.
+### Foundation (Weeks 1-2)
+- Problems: 2, 4, 5, 8, 11, 15, 18
+- Focus: Browser APIs, events, accessibility basics, security fundamentals
 
-High-performance Accessibility Tree Sync
-Implement a system to efficiently update an accessibility tree for a complex virtualized UI (screen-readers rely on it) without creating O(n) accessibility updates.
-Topics: Accessibility tree model, ARIA, batching updates, role mappings.
+### Intermediate (Weeks 3-5)
+- Problems: 1, 3, 6, 7, 13, 14, 16, 17
+- Focus: Performance optimization, state sync, rendering techniques
 
-Inline Code Execution Sandbox for Educational App
-Design a secure in-browser sandbox enabling users to run JS/TS snippets safely with resource/time limits and state isolation.
-Topics: iframe sandboxing, WebAssembly isolation, worker timeouts, resource limiting.
+### Advanced (Weeks 6-8)
+- Problems: 9, 10, 19, 22, 23, 24, 27, 28, 38, 41
+- Focus: Architecture, constraint solving, tooling, migration strategies
 
-Predictable CSS Layouts via Constraint Solving
-Create an engine that compiles high-level layout constraints into efficient DOM/CSS updates ensuring minimal reflow.
-Topics: Constraint solvers, incremental layout compilers, layout invalidation minimization.
+### Expert (Weeks 9-12)
+- Problems: 20, 36, 40, 44, 46, 49, 70, 90, 93, 98, 99, 100
+- Focus: Advanced patterns, distributed systems, security, performance SLAs
 
-Adaptive Input Pipeline for IME-heavy Languages
-Build controls that behave correctly across composition sequences (IME), mobile virtual keyboards, and assistive tech with selection stability.
-Topics: Composition events, input event ordering, caret handling, mobile keyboard quirks.
+---
 
-End-to-end Encrypted Sync of User Settings
-Create a client-side system that encrypts user settings before syncing to server so server never sees plaintext, supporting key rotation and multi-device sync.
-Topics: WebCrypto API, key management, conflict resolution, secure backups.
+## Common Topics Across All Problems
 
-Large-scale DOM Mutation Stress Tester
-Build a harness that generates pathological DOM mutation patterns to stress-test layout, GC, and incremental rendering; then auto-detects regressions.
-Topics: MutationObserver, synthetic workloads, perf instrumentation, stability metrics.
+### Must-Know Browser APIs
+- DOM: `getComputedStyle`, `getBoundingClientRect`, `Range`, `Selection`, `MutationObserver`, `ResizeObserver`, `IntersectionObserver`
+- Performance: `PerformanceObserver`, `requestAnimationFrame`, `requestIdleCallback`
+- Storage: `IndexedDB`, `localStorage`, `Cache API`
+- Workers: `Web Worker`, `Service Worker`, `SharedArrayBuffer`, `BroadcastChannel`
+- Security: `CSP`, `postMessage`, `WebCrypto`, `iframe sandbox`
 
-Composable ARIA Widgets Library (low-level primitives)
-Implement primitives (roving focus, combobox, tree, grid) that are accessible, composable, testable, and themeable, with tiny runtime.
-Topics: WAI-ARIA patterns, keyboard models, semantics-first APIs, test-driven accessibility.
+### Core Engineering Skills
+- Data structures: Trees, prefix sums, Fenwick trees, LRU caches, spatial indexing
+- Algorithms: Diffing, reconciliation, constraint solving, conflict resolution
+- Performance: Layout/paint/composite pipeline, batching, debouncing, virtualization
+- Accessibility: ARIA patterns, focus management, screen reader behavior
+- Security: XSS classes, CSP, origin isolation, secure communication
 
-Latency-adaptive UI Throttle
-Design a client-side scheduler that adapts UI update frequency based on measured input-to-display latency and device capabilities.
-Topics: Latency measurement, adaptive algorithms, rAF cadence, battery/network heuristics.
+### Architecture Patterns
+- Event delegation, command pattern, observer pattern, state machines
+- Plugin systems, hot-reload, feature flags, capability-based permissions
+- Batched updates, microtask vs macrotask, cooperative scheduling
+- CRDT, operational transforms, conflict resolution strategies
+- SSR hydration, progressive enhancement, incremental loading
 
-Safe Dynamic Script Loader with Dependency Graph
-Implement a runtime that loads third-party scripts with declared dependencies, isolation, timeouts, retry/backoff and graceful degradation.
-Topics: dynamic import, script tags vs modules, CSP, error handling, dependency resolution.
+---
 
-High-throughput Clipboard Manager for Complex Data
-Create a clipboard manager that supports multiple serialized formats, incremental paste previews, and security restrictions.
-Topics: Clipboard API, MIME types, paste sanitization, async clipboard.
+**Document Version**: 1.0
+**Last Updated**: 2025-10-30
+**Total Problems**: 105 (100 original + 5 bonus)
 
-Graphical Diff & Merge UI for Structured Docs
-Build a visual diff/merge tool for nested JSON/DOM-like documents with conflict resolution UI for end-users.
-Topics: Tree-diffing, merge algorithms, UX for conflicts, CRDT vs OT tradeoffs.
-
-Composable Animation Keyframe Compiler
-Create a compiler that takes high-level motion specifications and outputs performant CSS or Web Animations API usage with cross-browser fallbacks.
-Topics: Web Animations API, easing curves, GPU-accelerated properties, compile-time transforms.
-
-Universal Input Abstraction for Game-like UIs
-Design an input layer that standardizes mouse/keyboard/touch/gamepad/VR controllers with mapping, rebinding, and latency compensation.
-Topics: Gamepad API, pointer capture, input event normalization, mapping layers.
-
-Dynamic Accessibility Role Inference Engine
-Implement a system that infers missing semantics (roles, labels) for legacy markup, auto-injects ARIA safely, and explains changes to devs.
-Topics: Heuristics, ML-assisted suggestions (or rule-based), false positives mitigation, explainability.
-
-Composable Streaming Parser for Large HTML Documents
-Build a streaming HTML parser that can progressively render and index a huge HTML stream in the browser without full DOM materialization.
-Topics: Streaming parsing, incremental rendering, virtual DOM slices, backpressure.
-
-Predictive Form Autofill with Privacy Controls
-Implement smart autofill that predicts form intent, handles conditional fields, respects privacy policies, and offers per-field controls.
-Topics: Heuristics, privacy-by-default, input heuristics, user prompts, secure storage.
-
-If you want more I can:
-
-Produce another batch (I can easily generate 100+ unique prompts).
-
-Immediately expand any one of the items above into a full interview task: starter code, test harness, rubric, sample solutions (simple & optimized).
-
-Organize problems into themed sets (performance, security, accessibility, architecture) and produce a timed panel of questions for onsite interviews.
-
-Which direction should I take next — another huge batch, or expand one into a full exercise right away?
-
-You said:
-Another batch 
-ChatGPT said:
-Perfect ✅ — let’s go deeper. Here’s batch #61–85, all unique, tough frontend/DOM engineering problems that staff/principal-level interviews might use to probe deep system thinking, browser internals, and architectural leadership.
-
-61–85 — More unique hard frontend/DOM problems
-61. DOM Snapshot Compression for Error Reporting
-Problem: Capture and transmit DOM snapshots on error reports without sending sensitive data, using structural hashing, compression, and redaction.
-Topics: MutationObserver, DOM serialization, compression (gzip, brotli), privacy filters.
-
-62. Client-side Search Index for Rich Content
-Problem: Implement a full-text search index for 100k+ DOM nodes (docs, articles) that supports stemming, stopwords, incremental updates, and highlighting.
-Topics: Inverted indexes, tokenization, web workers, memory optimization.
-
-63. Predictive Layout Prefetcher
-Problem: Build a runtime system that predicts which DOM elements will enter the viewport soon and precomputes their layout/styles to reduce jank.
-Topics: IntersectionObserver, speculative rendering, layout/paint pipeline.
-
-64. Sandbox for Untrusted Widgets with CSS Isolation
-Problem: Design a framework that lets third-party widgets mount into your DOM without breaking global styles or leaking information.
-Topics: Shadow DOM, iframe sandbox, CSS scoping, CSP.
-
-65. State-machine Driven UI Workflow Engine
-Problem: Model complex UI flows (multi-step forms, wizards, error recovery) as explicit state machines, with persistence and replay.
-Topics: Statecharts, persistence, serialization, guard conditions.
-
-66. Optimized Accessibility Announcer Queue
-Problem: Implement a live-region announcer that batches and prioritizes screen reader messages to avoid spamming users.
-Topics: ARIA live regions, debouncing, priority queues, UX heuristics.
-
-67. Font Loading & FOUT/FOIT Mitigation
-Problem: Architect a font loader that avoids flashes of invisible text (FOIT) while balancing layout shifts and performance.
-Topics: Font Loading API, fallback stacks, layout stability, performance tradeoffs.
-
-68. Multi-origin Authentication in SPAs
-Problem: Implement a frontend auth manager that can handle multiple origins (iframe-embedded apps) securely with token refresh and logout sync.
-Topics: postMessage, SameSite cookies, CORS, OAuth 2.0.
-
-69. Declarative Undo/Redo History for Any Component
-Problem: Design a global undo/redo manager where components register atomic actions and can be rolled back deterministically.
-Topics: Command pattern, immutability, action logs, snapshots.
-
-70. DOM-based Spreadsheet Renderer (Excel clone)
-Problem: Render 1M+ spreadsheet cells efficiently in the DOM, supporting frozen rows/columns, scrolling, formulas, and selections.
-Topics: Virtualization, canvas vs DOM tradeoffs, dependency graphs.
-
-71. Performance Budget Enforcer in CI
-Problem: Create a CI tool that runs Lighthouse/DevTools audits, blocks builds if bundle size/CLS/LCP exceed budget, and auto-generates reports.
-Topics: CI/CD, Lighthouse API, thresholds, metrics pipelines.
-
-72. Precise Input Latency Profiler
-Problem: Build a profiler that measures input-to-paint latency per component and visualizes bottlenecks.
-Topics: PerformanceObserver, event timing API, paint timing, flamecharts.
-
-73. Secure Drag-drop Across Origins
-Problem: Implement drag-drop where source/target may be different origins, ensuring no data leaks and enforcing policy.
-Topics: HTML5 drag-drop, DataTransfer security, origin isolation.
-
-74. DOM-based Collaborative Whiteboard
-Problem: Build a collaborative whiteboard app where strokes sync across clients in real time with CRDTs for vector graphics.
-Topics: Canvas/SVG, WebRTC/WebSocket, CRDT, delta compression.
-
-75. Streaming Form Data Validator
-Problem: As a user fills out a massive form, validate fields in real-time using streaming server responses while ensuring responsiveness.
-Topics: Streams API, async validation, debounce, cancelation with AbortController.
-
-76. Dynamic CSS Container Queries Polyfill
-Problem: Implement a container query polyfill that re-renders elements when their container resizes.
-Topics: ResizeObserver, mutation batching, layout dependencies.
-
-77. Deterministic Multi-tab State Sync with Leader Election
-Problem: Keep app state consistent across multiple open tabs, elect a leader tab for expensive operations, and survive tab close/crash.
-Topics: BroadcastChannel, leader election algorithms, storage events.
-
-78. Accessibility-First Rich Chart Component
-Problem: Build an accessible chart that has full keyboard navigation, screen reader narration, and zoom/pan controls.
-Topics: SVG, ARIA roles for charts, focus rings, screen reader UX.
-
-79. Multi-stage Progressive Web App Bootstrapping
-Problem: Architect a PWA startup flow that progressively hydrates: shell → skeleton UI → cached content → live content, with minimal blocking.
-Topics: App shell model, hydration, SW caching, skeleton screens.
-
-80. DOM Layout Stress Simulator
-Problem: Write a tool that generates pathological DOM layouts (deep nesting, massive reflows) and measures browser perf regressions.
-Topics: Benchmark harnesses, DOM APIs, layout thrash detection.
-
-81. Incremental Static DOM Rehydration
-Problem: Implement an algorithm that rehydrates server-rendered DOM progressively (prioritizing visible elements).
-Topics: SSR hydration, priority queues, idle tasks, streaming.
-
-82. DOM Virtual Filesystem Explorer
-Problem: Render a filesystem tree with millions of files/folders, lazy-load children, support search/filter, and keyboard nav.
-Topics: Virtualization, async loading, keyboard UX, tree widgets.
-
-83. Client-only Secure Secret Manager
-Problem: Implement client-side secret storage (like API keys) with encryption-at-rest and no server exposure.
-Topics: WebCrypto, localStorage/IndexedDB encryption, key rotation.
-
-84. Predictive Prefetch with ML Integration
-Problem: Train a small on-device ML model to predict next navigation and prefetch assets, respecting privacy & bandwidth.
-Topics: TensorFlow.js, caching strategies, network info API.
-
-85. Component Error Boundary System
-Problem: Build a reusable error boundary system (like React’s) for vanilla JS components, capturing errors and showing fallbacks without full reload.
-Topics: window.onerror, unhandledrejection, component lifecycle, resilience.
-
-🔥 That brings us up to 85 unique problems so far.
-
-Would you like me to keep going to hit 100+ unique problems, or pause here and start organizing them into categories (Performance, Accessibility, Security, Architecture, DX, etc.) so you can quickly pick interview themes?
-
-You said:
-100
-ChatGPT said:
-Nice — let’s finish the list to 100. Below are problems 86–100, each unique, high-difficulty, and suitable for Principal/Staff frontend interviews. Short statement + one-line notes on deliverables and core topics to study.
-
-86. Deterministic Cross-browser Rendering Diff Tool
-Problem: Build a tool that loads a page in multiple browser engines (or browser versions) and highlights pixel and layout diffs, attributing differences to CSS/HTML/JS causes.
-Deliverables/Topics: Screenshot diffing, DOM/CSS blame heuristics, CSSOM differences, cross-browser quirks.
-
-87. Resource-aware Image CDN Client
-Problem: Create a client-side image selection layer that picks optimal image variants from a CDN based on DPR, viewport, user motion preference, and quota.
-Deliverables/Topics: srcset/sizes auto-generation, DPR handling, save-data, heuristics.
-
-88. Declarative Reactive Transitions Language
-Problem: Design a small DSL that describes transitions between UI states (enter/exit/stagger) and compile it into efficient runtime code.
-Deliverables/Topics: Parser/compiler, animation scheduling, cancellation semantics, Web Animations API.
-
-89. Secure WebAuthn Multi-factor Flow
-Problem: Implement a frontend flow that orchestrates password + WebAuthn device registration and fallback gracefully across browsers.
-Deliverables/Topics: WebAuthn API, credential management, attestation, UX for fallbacks.
-
-90. Tiny Deterministic Scheduler for Heavy DOM Work
-Problem: Build a cooperative scheduler that slices large DOM tasks (tree updates, diffing) into micro-jobs, keeps UI responsive, and is deterministic for testing.
-Deliverables/Topics: Task slicing, cooperative scheduling, Jest-friendly determinism, time-slicing.
-
-91. Adaptive Layouts for Foldable / Multi-screen Devices
-Problem: Design UI components and breakpoints that adapt to hinge/fold states and multi-screen layouts (local emulator support).
-Deliverables/Topics: CSS viewport segments API, window segments, fold-aware UX patterns.
-
-92. Accessibility-aware Image Annotation Tool
-Problem: Build an image annotation tool that also generates alt-text suggestions and semantic labels for each region for assistive tech.
-Deliverables/Topics: Region mapping, alt-text heuristics, accessibility metadata formats.
-
-93. High-performance DOM Merging for Microfrontends
-Problem: Implement a DOM-merge protocol so independently-deployed microfrontends can coexist in a page and share common DOM root without conflicts.
-Deliverables/Topics: Namespacing, CSS isolation, event containment, lifecycle contracts.
-
-94. Continuous Interaction Recorder for UX Research
-Problem: Create a privacy-aware recorder that logs interactions, input timing, and UI state transitions for later analysis, with scrub options.
-Deliverables/Topics: Event sampling, privacy redaction, chunked uploads, analysis-ready export.
-
-95. Structured Content Editor with Plugin API
-Problem: Build a document editor for nested content (blocks/components) with a plugin system that can add block types, serialization, and schema validation.
-Deliverables/Topics: Block model, schema validation, plugin lifecycle, collaborative hooks.
-
-96. Cross-platform Native-like Tactile Feedback Layer
-Problem: Implement an abstract haptic & audio feedback layer that maps UI actions to device-native sensations across platforms.
-Deliverables/Topics: Vibration API, platform capability detection, fallbacks, UX tuning.
-
-97. Efficient Multi-lingual Runtime Intl Loader
-Problem: Create a system for loading and switching i18n locale data at runtime with minimal bundle cost and instant UI swap without reload.
-Deliverables/Topics: Chunked locale data, ICU message handling, pluralization, caching.
-
-98. Component-level Performance SLA Enforcement
-Problem: Build tooling that monitors component render times in production and triggers fallbacks or degrades features when a component exceeds defined SLAs.
-Deliverables/Topics: Performance marks/measures, feature-flagged degradation, alerting & observability.
-
-99. Progressive Hydration with Interaction Tracing
-Problem: Implement progressive hydration that hydrates components in priority order based on actual user interactions traced from server-rendered markup.
-Deliverables/Topics: Interaction tracing, priority queue hydration, idle-time scheduling.
-
-100. Low-latency Image Editing Pipeline in Browser
-Problem: Build an in-browser image editor supporting nondestructive edits (layers/filters), undo history, and GPU-accelerated filters for large images.
-Deliverables/Topics: WebGL or OffscreenCanvas pipeline, layer compositing, history/delta storage, memory management.
-
-That’s 100 total — a comprehensive playground of problems across performance, accessibility, security, architecture, and UX.
