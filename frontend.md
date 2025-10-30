@@ -23110,4 +23110,1204 @@ console.log(highlightWords('Hello world', ['world']));
 // 'Hello <mark>world</mark>'
 ```
 
-This completes all 100 comprehensive JavaScript interview questions with solutions, variants, and advanced modifications. Each question has been covered with practical examples and production-ready code patterns essential for frontend interview preparation.
+## React Interview Questions - Comprehensive Solutions
+
+### React Q1: usePrevious() Hook
+
+**Problem**: Custom hook to store and access the previous value of a state or prop.
+
+**Solution**:
+
+```javascript
+import { useRef, useEffect } from 'react';
+
+function usePrevious(value) {
+  const ref = useRef();
+  
+  useEffect(() => {
+    ref.current = value;
+  }, [value]);
+  
+  return ref.current;
+}
+
+// Example usage
+function Counter() {
+  const [count, setCount] = useState(0);
+  const prevCount = usePrevious(count);
+  
+  return (
+    <div>
+      <p>Current: {count}, Previous: {prevCount}</p>
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+    </div>
+  );
+}
+```
+
+**Variant: With History Tracking**
+
+```javascript
+function usePreviousWithHistory(value, historySize = 5) {
+  const historyRef = useRef([]);
+  
+  useEffect(() => {
+    historyRef.current = [value, ...historyRef.current].slice(0, historySize);
+  }, [value, historySize]);
+  
+  return {
+    previous: historyRef.current[1],
+    history: historyRef.current.slice(1),
+    getPrevious: (stepsBack = 1) => historyRef.current[stepsBack]
+  };
+}
+
+// Usage
+function Demo() {
+  const [count, setCount] = useState(0);
+  const { previous, history, getPrevious } = usePreviousWithHistory(count, 10);
+  
+  return (
+    <div>
+      <p>Current: {count}</p>
+      <p>Previous: {previous}</p>
+      <p>2 steps back: {getPrevious(2)}</p>
+      <p>History: {history.join(', ')}</p>
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+    </div>
+  );
+}
+```
+
+**Advanced: Type-Safe with Comparison**
+
+```javascript
+function usePreviousAdvanced(value, isEqual = (a, b) => a === b) {
+  const ref = useRef({ value, hasChanged: false });
+  
+  useEffect(() => {
+    const hasChanged = !isEqual(ref.current.value, value);
+    ref.current = { value, hasChanged };
+  });
+  
+  return {
+    previous: ref.current.value,
+    hasChanged: ref.current.hasChanged
+  };
+}
+
+// Usage with deep comparison
+function ObjectDemo() {
+  const [user, setUser] = useState({ name: 'Alice', age: 30 });
+  const { previous, hasChanged } = usePreviousAdvanced(
+    user,
+    (a, b) => JSON.stringify(a) === JSON.stringify(b)
+  );
+  
+  return (
+    <div>
+      {hasChanged && <p>User changed from {previous?.name} to {user.name}</p>}
+    </div>
+  );
+}
+```
+
+### React Q2: useIdle() Hook
+
+**Problem**: Detect if the user is idle (inactive) for a certain duration.
+
+**Solution**:
+
+```javascript
+function useIdle(timeout = 60000) {
+  const [isIdle, setIsIdle] = useState(false);
+  
+  useEffect(() => {
+    let timeoutId;
+    
+    const handleActivity = () => {
+      setIsIdle(false);
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => setIsIdle(true), timeout);
+    };
+    
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    
+    events.forEach(event => {
+      document.addEventListener(event, handleActivity);
+    });
+    
+    // Initial timer
+    timeoutId = setTimeout(() => setIsIdle(true), timeout);
+    
+    return () => {
+      events.forEach(event => {
+        document.removeEventListener(event, handleActivity);
+      });
+      clearTimeout(timeoutId);
+    };
+  }, [timeout]);
+  
+  return isIdle;
+}
+
+// Example usage
+function IdleDetector() {
+  const isIdle = useIdle(5000);  // 5 seconds
+  
+  return (
+    <div>
+      <p>User is: {isIdle ? 'IDLE' : 'ACTIVE'}</p>
+    </div>
+  );
+}
+```
+
+**Variant: With Idle Time Tracking**
+
+```javascript
+function useIdleWithTime(timeout = 60000) {
+  const [isIdle, setIsIdle] = useState(false);
+  const [idleTime, setIdleTime] = useState(0);
+  const idleStartRef = useRef(null);
+  
+  useEffect(() => {
+    let timeoutId;
+    let intervalId;
+    
+    const handleActivity = () => {
+      setIsIdle(false);
+      setIdleTime(0);
+      idleStartRef.current = null;
+      
+      clearTimeout(timeoutId);
+      clearInterval(intervalId);
+      
+      timeoutId = setTimeout(() => {
+        setIsIdle(true);
+        idleStartRef.current = Date.now();
+        
+        intervalId = setInterval(() => {
+          if (idleStartRef.current) {
+            setIdleTime(Date.now() - idleStartRef.current);
+          }
+        }, 1000);
+      }, timeout);
+    };
+    
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    
+    events.forEach(event => {
+      document.addEventListener(event, handleActivity);
+    });
+    
+    timeoutId = setTimeout(() => {
+      setIsIdle(true);
+      idleStartRef.current = Date.now();
+    }, timeout);
+    
+    return () => {
+      events.forEach(event => {
+        document.removeEventListener(event, handleActivity);
+      });
+      clearTimeout(timeoutId);
+      clearInterval(intervalId);
+    };
+  }, [timeout]);
+  
+  return { isIdle, idleTime: Math.floor(idleTime / 1000) };
+}
+
+// Usage
+function IdleTracker() {
+  const { isIdle, idleTime } = useIdleWithTime(3000);
+  
+  return (
+    <div>
+      <p>Status: {isIdle ? `Idle for ${idleTime}s` : 'Active'}</p>
+    </div>
+  );
+}
+```
+
+### React Q3: useAsync() Hook
+
+**Problem**: Handle async operations like fetching data, with loading and error states.
+
+**Solution**:
+
+```javascript
+function useAsync(asyncFunction, immediate = true) {
+  const [status, setStatus] = useState('idle');
+  const [value, setValue] = useState(null);
+  const [error, setError] = useState(null);
+  
+  const execute = useCallback(async (...params) => {
+    setStatus('pending');
+    setValue(null);
+    setError(null);
+    
+    try {
+      const response = await asyncFunction(...params);
+      setValue(response);
+      setStatus('success');
+      return response;
+    } catch (error) {
+      setError(error);
+      setStatus('error');
+      throw error;
+    }
+  }, [asyncFunction]);
+  
+  useEffect(() => {
+    if (immediate) {
+      execute();
+    }
+  }, [execute, immediate]);
+  
+  return { execute, status, value, error, isLoading: status === 'pending' };
+}
+
+// Example usage
+function UserProfile({ userId }) {
+  const fetchUser = useCallback(
+    () => fetch(`/api/users/${userId}`).then(r => r.json()),
+    [userId]
+  );
+  
+  const { value: user, isLoading, error } = useAsync(fetchUser);
+  
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  
+  return <div>User: {user?.name}</div>;
+}
+```
+
+**Variant: With Retry and Abort**
+
+```javascript
+function useAsyncAdvanced(asyncFunction, options = {}) {
+  const { immediate = true, maxRetries = 3, retryDelay = 1000 } = options;
+  
+  const [state, setState] = useState({
+    status: 'idle',
+    value: null,
+    error: null,
+    retries: 0
+  });
+  
+  const abortControllerRef = useRef(null);
+  
+  const execute = useCallback(async (...params) => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
+    
+    setState(prev => ({ ...prev, status: 'pending', error: null }));
+    
+    let lastError;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await asyncFunction(...params, {
+          signal: abortControllerRef.current.signal
+        });
+        
+        setState({
+          status: 'success',
+          value: response,
+          error: null,
+          retries: attempt
+        });
+        
+        return response;
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          throw error;
+        }
+        
+        lastError = error;
+        
+        if (attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, retryDelay * Math.pow(2, attempt)));
+        }
+      }
+    }
+    
+    setState({
+      status: 'error',
+      value: null,
+      error: lastError,
+      retries: maxRetries
+    });
+    
+    throw lastError;
+  }, [asyncFunction, maxRetries, retryDelay]);
+  
+  const cancel = useCallback(() => {
+    abortControllerRef.current?.abort();
+  }, []);
+  
+  useEffect(() => {
+    if (immediate) {
+      execute();
+    }
+    
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, [execute, immediate]);
+  
+  return {
+    ...state,
+    execute,
+    cancel,
+    isLoading: state.status === 'pending'
+  };
+}
+```
+
+### React Q4: useDebounce() Hook
+
+**Problem**: Debounce a changing value or function (like search input).
+
+**Solution**:
+
+```javascript
+function useDebounce(value, delay = 500) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  
+  return debouncedValue;
+}
+
+// Example usage
+function SearchComponent() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  
+  useEffect(() => {
+    if (debouncedSearchTerm) {
+      // Perform search
+      fetch(`/api/search?q=${debouncedSearchTerm}`)
+        .then(r => r.json())
+        .then(data => console.log(data));
+    }
+  }, [debouncedSearchTerm]);
+  
+  return (
+    <input
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      placeholder="Search..."
+    />
+  );
+}
+```
+
+**Variant: Debounced Callback**
+
+```javascript
+function useDebouncedCallback(callback, delay = 500, dependencies = []) {
+  const timeoutRef = useRef(null);
+  
+  const debouncedCallback = useCallback((...args) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    
+    timeoutRef.current = setTimeout(() => {
+      callback(...args);
+    }, delay);
+  }, [callback, delay, ...dependencies]);
+  
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+  
+  return debouncedCallback;
+}
+
+// Usage
+function Form() {
+  const handleSubmit = useDebouncedCallback((data) => {
+    console.log('Submitting:', data);
+    fetch('/api/submit', { method: 'POST', body: JSON.stringify(data) });
+  }, 1000);
+  
+  return (
+    <button onClick={() => handleSubmit({ name: 'Alice' })}>
+      Submit
+    </button>
+  );
+}
+```
+
+### React Q5: useThrottle() Hook
+
+**Problem**: Limit how frequently a function or value can update.
+
+**Solution**:
+
+```javascript
+function useThrottle(value, limit = 500) {
+  const [throttledValue, setThrottledValue] = useState(value);
+  const lastRan = useRef(Date.now());
+  
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (Date.now() - lastRan.current >= limit) {
+        setThrottledValue(value);
+        lastRan.current = Date.now();
+      }
+    }, limit - (Date.now() - lastRan.current));
+    
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, limit]);
+  
+  return throttledValue;
+}
+
+// Example usage
+function ScrollPosition() {
+  const [scrollY, setScrollY] = useState(0);
+  const throttledScrollY = useThrottle(scrollY, 200);
+  
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+  
+  return <div>Scroll position: {throttledScrollY}px</div>;
+}
+```
+
+**Variant: Throttled Callback**
+
+```javascript
+function useThrottledCallback(callback, limit = 500) {
+  const lastRan = useRef(Date.now());
+  const timeoutRef = useRef(null);
+  
+  const throttledCallback = useCallback((...args) => {
+    const now = Date.now();
+    
+    if (now - lastRan.current >= limit) {
+      callback(...args);
+      lastRan.current = now;
+    } else {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      
+      timeoutRef.current = setTimeout(() => {
+        callback(...args);
+        lastRan.current = Date.now();
+      }, limit - (now - lastRan.current));
+    }
+  }, [callback, limit]);
+  
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+  
+  return throttledCallback;
+}
+```
+
+### React Q6: useResponsive() Hook
+
+**Problem**: Detect screen size or breakpoint and return responsive flags.
+
+**Solution**:
+
+```javascript
+function useResponsive() {
+  const [breakpoint, setBreakpoint] = useState({
+    isMobile: false,
+    isTablet: false,
+    isDesktop: false,
+    width: 0
+  });
+  
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      
+      setBreakpoint({
+        isMobile: width < 768,
+        isTablet: width >= 768 && width < 1024,
+        isDesktop: width >= 1024,
+        width
+      });
+    };
+    
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  return breakpoint;
+}
+
+// Example usage
+function ResponsiveLayout() {
+  const { isMobile, isTablet, isDesktop } = useResponsive();
+  
+  return (
+    <div>
+      {isMobile && <MobileLayout />}
+      {isTablet && <TabletLayout />}
+      {isDesktop && <DesktopLayout />}
+    </div>
+  );
+}
+```
+
+**Variant: With Custom Breakpoints**
+
+```javascript
+function useBreakpoints(breakpoints = {}) {
+  const defaultBreakpoints = {
+    xs: 0,
+    sm: 640,
+    md: 768,
+    lg: 1024,
+    xl: 1280,
+    '2xl': 1536,
+    ...breakpoints
+  };
+  
+  const [currentBreakpoint, setCurrentBreakpoint] = useState('');
+  
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      const sorted = Object.entries(defaultBreakpoints)
+        .sort(([, a], [, b]) => b - a);
+      
+      for (const [name, minWidth] of sorted) {
+        if (width >= minWidth) {
+          setCurrentBreakpoint(name);
+          break;
+        }
+      }
+    };
+    
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  const isBreakpoint = (name) => {
+    const currentValue = defaultBreakpoints[currentBreakpoint];
+    const targetValue = defaultBreakpoints[name];
+    return currentValue >= targetValue;
+  };
+  
+  return { currentBreakpoint, isBreakpoint };
+}
+```
+
+### React Q7: useWhyDidYouUpdate() Hook
+
+**Problem**: Debug re-renders by logging which props changed.
+
+**Solution**:
+
+```javascript
+function useWhyDidYouUpdate(name, props) {
+  const previousProps = useRef();
+  
+  useEffect(() => {
+    if (previousProps.current) {
+      const allKeys = Object.keys({ ...previousProps.current, ...props });
+      const changedProps = {};
+      
+      allKeys.forEach(key => {
+        if (previousProps.current[key] !== props[key]) {
+          changedProps[key] = {
+            from: previousProps.current[key],
+            to: props[key]
+          };
+        }
+      });
+      
+      if (Object.keys(changedProps).length > 0) {
+        console.log('[why-did-you-update]', name, changedProps);
+      }
+    }
+    
+    previousProps.current = props;
+  });
+}
+
+// Example usage
+function ExpensiveComponent({ count, user, settings }) {
+  useWhyDidYouUpdate('ExpensiveComponent', { count, user, settings });
+  
+  return <div>Count: {count}</div>;
+}
+```
+
+**Variant: With Performance Metrics**
+
+```javascript
+function useWhyDidYouUpdateAdvanced(name, props) {
+  const previousProps = useRef();
+  const renderCount = useRef(0);
+  const renderTimes = useRef([]);
+  
+  useEffect(() => {
+    const renderStart = performance.now();
+    
+    renderCount.current += 1;
+    
+    if (previousProps.current) {
+      const changes = Object.keys(props).reduce((acc, key) => {
+        if (previousProps.current[key] !== props[key]) {
+          acc[key] = {
+            from: previousProps.current[key],
+            to: props[key],
+            type: typeof props[key]
+          };
+        }
+        return acc;
+      }, {});
+      
+      const renderTime = performance.now() - renderStart;
+      renderTimes.current.push(renderTime);
+      
+      if (Object.keys(changes).length > 0) {
+        console.group(`[${name}] Render #${renderCount.current}`);
+        console.log('Changed props:', changes);
+        console.log('Render time:', renderTime.toFixed(2), 'ms');
+        console.log('Avg render time:', 
+          (renderTimes.current.reduce((a, b) => a + b, 0) / renderTimes.current.length).toFixed(2), 'ms'
+        );
+        console.groupEnd();
+      }
+    }
+    
+    previousProps.current = props;
+  });
+}
+```
+
+### React Q8: useOnScreen() Hook
+
+**Problem**: Detect when an element is visible in the viewport (using IntersectionObserver).
+
+**Solution**:
+
+```javascript
+function useOnScreen(ref, rootMargin = '0px') {
+  const [isIntersecting, setIntersecting] = useState(false);
+  
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIntersecting(entry.isIntersecting);
+      },
+      { rootMargin }
+    );
+    
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+    
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current);
+      }
+    };
+  }, [ref, rootMargin]);
+  
+  return isIntersecting;
+}
+
+// Example usage
+function LazyImage({ src, alt }) {
+  const ref = useRef();
+  const isVisible = useOnScreen(ref);
+  
+  return (
+    <div ref={ref}>
+      {isVisible ? (
+        <img src={src} alt={alt} />
+      ) : (
+        <div style={{ height: '200px', background: '#eee' }}>Loading...</div>
+      )}
+    </div>
+  );
+}
+```
+
+**Variant: With Entry Details**
+
+```javascript
+function useIntersectionObserver(ref, options = {}) {
+  const [entry, setEntry] = useState(null);
+  
+  useEffect(() => {
+    if (!ref.current) return;
+    
+    const observer = new IntersectionObserver(([entry]) => {
+      setEntry(entry);
+    }, options);
+    
+    observer.observe(ref.current);
+    
+    return () => {
+      observer.disconnect();
+    };
+  }, [ref, options.threshold, options.root, options.rootMargin]);
+  
+  return entry;
+}
+
+// Usage with detailed info
+function AnimatedSection() {
+  const ref = useRef();
+  const entry = useIntersectionObserver(ref, {
+    threshold: [0, 0.25, 0.5, 0.75, 1],
+    rootMargin: '-100px'
+  });
+  
+  const opacity = entry?.intersectionRatio || 0;
+  
+  return (
+    <div ref={ref} style={{ opacity, transition: 'opacity 0.5s' }}>
+      <h2>Animated content (opacity: {(opacity * 100).toFixed(0)}%)</h2>
+    </div>
+  );
+}
+```
+
+### React Q9: useScript() Hook
+
+**Problem**: Dynamically load and manage external scripts in React.
+
+**Solution**:
+
+```javascript
+function useScript(src, options = {}) {
+  const [status, setStatus] = useState(src ? 'loading' : 'idle');
+  
+  useEffect(() => {
+    if (!src) {
+      setStatus('idle');
+      return;
+    }
+    
+    // Check if script already exists
+    let script = document.querySelector(`script[src="${src}"]`);
+    
+    if (!script) {
+      script = document.createElement('script');
+      script.src = src;
+      script.async = options.async !== false;
+      script.defer = options.defer || false;
+      
+      if (options.id) script.id = options.id;
+      if (options.crossOrigin) script.crossOrigin = options.crossOrigin;
+      
+      script.setAttribute('data-status', 'loading');
+      document.body.appendChild(script);
+      
+      const setAttributeFromEvent = (event) => {
+        script.setAttribute('data-status', event.type === 'load' ? 'ready' : 'error');
+      };
+      
+      script.addEventListener('load', setAttributeFromEvent);
+      script.addEventListener('error', setAttributeFromEvent);
+    } else {
+      setStatus(script.getAttribute('data-status'));
+    }
+    
+    const setStateFromEvent = (event) => {
+      setStatus(event.type === 'load' ? 'ready' : 'error');
+    };
+    
+    script.addEventListener('load', setStateFromEvent);
+    script.addEventListener('error', setStateFromEvent);
+    
+    return () => {
+      if (script) {
+        script.removeEventListener('load', setStateFromEvent);
+        script.removeEventListener('error', setStateFromEvent);
+      }
+      
+      if (options.removeOnUnmount && script) {
+        script.remove();
+      }
+    };
+  }, [src]);
+  
+  return status;
+}
+
+// Example usage
+function GoogleMapsComponent() {
+  const status = useScript(
+    'https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY'
+  );
+  
+  if (status === 'loading') return <div>Loading map...</div>;
+  if (status === 'error') return <div>Error loading map</div>;
+  
+  return <div>Map loaded! {/* Initialize map */}</div>;
+}
+```
+
+### React Q10: useOnClickOutside() Hook
+
+**Problem**: Detect clicks outside a specific component to close modals or dropdowns.
+
+**Solution**:
+
+```javascript
+function useOnClickOutside(ref, handler) {
+  useEffect(() => {
+    const listener = (event) => {
+      if (!ref.current || ref.current.contains(event.target)) {
+        return;
+      }
+      handler(event);
+    };
+    
+    document.addEventListener('mousedown', listener);
+    document.addEventListener('touchstart', listener);
+    
+    return () => {
+      document.removeEventListener('mousedown', listener);
+      document.removeEventListener('touchstart', listener);
+    };
+  }, [ref, handler]);
+}
+
+// Example usage
+function Dropdown() {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef();
+  
+  useOnClickOutside(ref, () => setIsOpen(false));
+  
+  return (
+    <div ref={ref}>
+      <button onClick={() => setIsOpen(!isOpen)}>Toggle</button>
+      {isOpen && (
+        <div className="dropdown-menu">
+          <div>Item 1</div>
+          <div>Item 2</div>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+**Variant: With Multiple Refs**
+
+```javascript
+function useClickOutside(refs, handler) {
+  useEffect(() => {
+    const listener = (event) => {
+      const refsArray = Array.isArray(refs) ? refs : [refs];
+      
+      const clickedInside = refsArray.some(ref => 
+        ref.current?.contains(event.target)
+      );
+      
+      if (!clickedInside) {
+        handler(event);
+      }
+    };
+    
+    document.addEventListener('mousedown', listener);
+    document.addEventListener('touchstart', listener);
+    
+    return () => {
+      document.removeEventListener('mousedown', listener);
+      document.removeEventListener('touchstart', listener);
+    };
+  }, [refs, handler]);
+}
+
+// Usage: Exclude multiple elements
+function Modal({ trigger }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const modalRef = useRef();
+  const triggerRef = useRef();
+  
+  useClickOutside([modalRef, triggerRef], () => setIsOpen(false));
+  
+  return (
+    <>
+      <button ref={triggerRef} onClick={() => setIsOpen(true)}>
+        Open Modal
+      </button>
+      {isOpen && (
+        <div ref={modalRef} className="modal">
+          Modal content
+        </div>
+      )}
+    </>
+  );
+}
+```
+
+### React Q11-Q20: Additional Hooks
+
+```javascript
+// Q11: useHasFocus Hook
+function useHasFocus() {
+  const [hasFocus, setHasFocus] = useState(document.hasFocus());
+  
+  useEffect(() => {
+    const handleFocus = () => setHasFocus(true);
+    const handleBlur = () => setHasFocus(false);
+    
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('blur', handleBlur);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, []);
+  
+  return hasFocus;
+}
+
+// Q12: useToggle Hook
+function useToggle(initialValue = false) {
+  const [value, setValue] = useState(initialValue);
+  
+  const toggle = useCallback(() => {
+    setValue(v => !v);
+  }, []);
+  
+  const setTrue = useCallback(() => setValue(true), []);
+  const setFalse = useCallback(() => setValue(false), []);
+  
+  return [value, toggle, { setTrue, setFalse, setValue }];
+}
+
+// Q13: useCopy Hook
+function useCopy() {
+  const [copied, setCopied] = useState(false);
+  
+  const copy = useCallback(async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      return true;
+    } catch (error) {
+      setCopied(false);
+      return false;
+    }
+  }, []);
+  
+  return { copied, copy };
+}
+
+// Q14: useLockedBody Hook
+function useLockedBody(locked = false) {
+  useEffect(() => {
+    if (!locked) return;
+    
+    const originalOverflow = document.body.style.overflow;
+    const originalPaddingRight = document.body.style.paddingRight;
+    
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    
+    document.body.style.overflow = 'hidden';
+    document.body.style.paddingRight = `${scrollbarWidth}px`;
+    
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.paddingRight = originalPaddingRight;
+    };
+  }, [locked]);
+}
+
+// Q15: Number Increment Counter
+function useCountUp(end, duration = 2000, start = 0) {
+  const [count, setCount] = useState(start);
+  const frameRate = 1000 / 60;
+  const totalFrames = Math.round(duration / frameRate);
+  
+  useEffect(() => {
+    let frame = 0;
+    
+    const counter = setInterval(() => {
+      frame++;
+      const progress = frame / totalFrames;
+      const currentCount = Math.round(start + (end - start) * progress);
+      
+      if (frame === totalFrames) {
+        clearInterval(counter);
+        setCount(end);
+      } else {
+        setCount(currentCount);
+      }
+    }, frameRate);
+    
+    return () => clearInterval(counter);
+  }, [end, start, duration]);
+  
+  return count;
+}
+
+// Usage
+function Counter({ target }) {
+  const count = useCountUp(target, 2000);
+  return <div>{count}</div>;
+}
+
+// Q16: Capture Product Visible in Viewport
+function useProductTracking(ref, productId) {
+  const [viewed, setViewed] = useState(false);
+  
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !viewed) {
+          setViewed(true);
+          
+          // Track analytics
+          window.analytics?.track('product_viewed', {
+            productId,
+            timestamp: Date.now()
+          });
+        }
+      },
+      { threshold: 0.5 }
+    );
+    
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+    
+    return () => observer.disconnect();
+  }, [ref, productId, viewed]);
+  
+  return viewed;
+}
+
+// Q17: Highlight Text on Selection
+function useTextSelection() {
+  const [selection, setSelection] = useState('');
+  
+  useEffect(() => {
+    const handleSelection = () => {
+      const selected = window.getSelection()?.toString();
+      setSelection(selected || '');
+    };
+    
+    document.addEventListener('mouseup', handleSelection);
+    document.addEventListener('keyup', handleSelection);
+    
+    return () => {
+      document.removeEventListener('mouseup', handleSelection);
+      document.removeEventListener('keyup', handleSelection);
+    };
+  }, []);
+  
+  return selection;
+}
+
+// Q18: Batch API Calls in Sequence
+function useBatchAPI(endpoints) {
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  
+  const executeBatch = useCallback(async () => {
+    setLoading(true);
+    const batchResults = [];
+    
+    for (const endpoint of endpoints) {
+      try {
+        const response = await fetch(endpoint);
+        const data = await response.json();
+        batchResults.push({ endpoint, data, success: true });
+      } catch (error) {
+        batchResults.push({ endpoint, error, success: false });
+      }
+    }
+    
+    setResults(batchResults);
+    setLoading(false);
+    return batchResults;
+  }, [endpoints]);
+  
+  return { results, loading, executeBatch };
+}
+
+// Q19: Time in Human Readable Format
+function useTimeAgo(timestamp) {
+  const [timeAgo, setTimeAgo] = useState('');
+  
+  useEffect(() => {
+    const updateTimeAgo = () => {
+      const seconds = Math.floor((Date.now() - timestamp) / 1000);
+      
+      if (seconds < 60) return setTimeAgo(`${seconds} seconds ago`);
+      if (seconds < 3600) return setTimeAgo(`${Math.floor(seconds / 60)} minutes ago`);
+      if (seconds < 86400) return setTimeAgo(`${Math.floor(seconds / 3600)} hours ago`);
+      if (seconds < 2592000) return setTimeAgo(`${Math.floor(seconds / 86400)} days ago`);
+      if (seconds < 31536000) return setTimeAgo(`${Math.floor(seconds / 2592000)} months ago`);
+      return setTimeAgo(`${Math.floor(seconds / 31536000)} years ago`);
+    };
+    
+    updateTimeAgo();
+    const interval = setInterval(updateTimeAgo, 60000);
+    
+    return () => clearInterval(interval);
+  }, [timestamp]);
+  
+  return timeAgo;
+}
+
+// Q20: Detect Overlapping Circles
+function useCircleCollision(circle1, circle2) {
+  const [isOverlapping, setIsOverlapping] = useState(false);
+  
+  useEffect(() => {
+    const distance = Math.sqrt(
+      Math.pow(circle2.x - circle1.x, 2) + 
+      Math.pow(circle2.y - circle1.y, 2)
+    );
+    
+    const radiusSum = circle1.radius + circle2.radius;
+    setIsOverlapping(distance < radiusSum);
+  }, [circle1, circle2]);
+  
+  return isOverlapping;
+}
+```
+
+This completes all 100 JavaScript interview questions plus 20 comprehensive React custom hooks with solutions, variants, and advanced modifications. Each solution includes practical examples and production-ready code patterns essential for frontend interview preparation.
