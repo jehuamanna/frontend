@@ -1,8 +1,8 @@
-input_path="frontend.md"
-output_path="frontend.pdf"
+# input_path="frontend.md"
+# output_path="frontend.pdf"
 
-# input_path="frontend-design-problems.md"
-# output_path="frontend-design-problems.pdf"
+input_path="frontend-design-problems.md"
+output_path="frontend-design-problems.pdf"
 
 # Preprocess: split long fenced code blocks every N lines to avoid LaTeX overflow
 SPLIT_EVERY=200
