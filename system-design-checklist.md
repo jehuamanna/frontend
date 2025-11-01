@@ -105,7 +105,7 @@
 | # | Problem | Status | Location | Notes |
 |---|---------|--------|----------|-------|
 | 5 | Diagnosing and Fixing Memory Leaks in a SPA | ✅ | Full implementation with 18 sections |
-| 6 | ContentEditable Rich-Text Editor: Undo/Redo | ⏳ | Full implementation |
+| 6 | ContentEditable Rich-Text Editor: Undo/Redo | ✅ | Full implementation with Command Pattern, XSS protection |
 | 9 | Cross-window / WebWorker Shared State | ⏳ | Full implementation with BroadcastChannel |
 | 15 | Advanced Input Masking & Validation Library | ⏳ | Full implementation with IME support |
 | 22 | Browser-native PDF Viewer with Annotations | ⏳ | Full implementation |
