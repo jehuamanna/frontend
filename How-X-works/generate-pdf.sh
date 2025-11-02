@@ -111,7 +111,7 @@ echo ""
 
 pandoc "$INPUT_FILE" \
   --metadata-file="$METADATA_FILE" \
-  --from=markdown+smart \
+  --from=markdown+smart+raw_html \
   --to=pdf \
   --pdf-engine=xelatex \
   --highlight-style=tango \

@@ -237,3 +237,4 @@ plt.tight_layout()
 plt.savefig('docs/images/scheduler_pattern.png', dpi=300, bbox_inches='tight', facecolor='white')
 print("✓ Scheduler Pattern diagram generated: docs/images/scheduler_pattern.png")
 
+

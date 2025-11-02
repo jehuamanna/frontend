@@ -240,3 +240,4 @@ plt.tight_layout()
 plt.savefig('docs/images/mutation_observer_pattern.png', dpi=300, bbox_inches='tight', facecolor='white')
 print("✓ Mutation Observer Pattern architecture diagram generated successfully")
 
+

@@ -197,3 +197,4 @@ plt.tight_layout()
 plt.savefig('docs/images/pipeline_pattern.png', dpi=300, bbox_inches='tight', facecolor='white')
 print("✓ Pipeline Pattern architecture diagram generated successfully")
 
+

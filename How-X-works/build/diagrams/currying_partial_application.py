@@ -242,3 +242,4 @@ plt.tight_layout()
 plt.savefig('docs/images/currying_partial_application.png', dpi=300, bbox_inches='tight', facecolor='white')
 print("✓ Currying / Partial Application architecture diagram generated successfully")
 
+

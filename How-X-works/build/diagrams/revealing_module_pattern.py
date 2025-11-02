@@ -263,3 +263,4 @@ plt.tight_layout()
 plt.savefig('docs/images/revealing_module_pattern.png', dpi=300, bbox_inches='tight', facecolor='white')
 print("✓ Revealing Module Pattern architecture diagram generated successfully")
 
+

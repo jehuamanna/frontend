@@ -224,3 +224,4 @@ plt.tight_layout()
 plt.savefig('docs/images/observer_reactive_streams_pattern.png', dpi=300, bbox_inches='tight', facecolor='white')
 print("✓ Observer (Reactive Streams) Pattern diagram generated: docs/images/observer_reactive_streams_pattern.png")
 
+

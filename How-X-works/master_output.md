@@ -7,7 +7,7 @@ JavaScript & Browser Design Patterns — Complete Documentation
 
 ---
 
-# CONTINUED: Creational — Constructor Pattern
+# Creational — Constructor Pattern
 
 ## Concept Overview
 
@@ -363,7 +363,7 @@ function UserClosure(name) {
 
 ---
 
-# CONTINUED: Creational — Factory Pattern
+# Creational — Factory Pattern
 
 ## Concept Overview
 
@@ -957,7 +957,7 @@ function createIcon(type, size = 24) {
 
 ---
 
-# CONTINUED: Creational — Abstract Factory Pattern
+# Creational — Abstract Factory Pattern
 
 ## Concept Overview
 
@@ -1669,7 +1669,7 @@ const appWebGL = new GraphicsApp(webglFactory, canvas);
 
 ---
 
-# CONTINUED: Creational — Builder Pattern
+# Creational — Builder Pattern
 
 ## Concept Overview
 
@@ -2546,7 +2546,7 @@ new StyleBuilder('.card')
 
 ---
 
-# CONTINUED: Creational — Prototype Pattern
+# Creational — Prototype Pattern
 
 ## Concept Overview
 
@@ -3207,7 +3207,7 @@ window.addEventListener('popstate', (event) => {
 
 ---
 
-# CONTINUED: Creational — Singleton Pattern
+# Creational — Singleton Pattern
 
 ## Concept Overview
 
@@ -4204,7 +4204,7 @@ analytics.page('Home');
 
 ---
 
-# CONTINUED: Creational — Object Pool Pattern
+# Creational — Object Pool Pattern
 
 ## Concept Overview
 
@@ -5357,7 +5357,7 @@ class OffscreenCanvasPool {
 
 ---
 
-# CONTINUED: Structural — Adapter Pattern
+# Structural — Adapter Pattern
 
 ## Concept Overview
 
@@ -6533,7 +6533,7 @@ class FallbackNotificationImpl {
 
 ---
 
-# CONTINUED: Structural — Bridge Pattern
+# Structural — Bridge Pattern
 
 ## Concept Overview
 
@@ -7872,7 +7872,7 @@ await persistence.saveObject('largeData', { /* large object */ });
 
 ---
 
-# CONTINUED: Structural — Composite Pattern
+# Structural — Composite Pattern
 
 ## Concept Overview
 
@@ -9118,7 +9118,7 @@ charactersGroup.setOpacity(0.5);
 
 ---
 
-# CONTINUED: Structural — Decorator Pattern
+# Structural — Decorator Pattern
 
 ## Concept Overview
 
@@ -10210,7 +10210,7 @@ const response = await client.request('https://api.example.com/data');
 
 ---
 
-# CONTINUED: Structural — Facade Pattern
+# Structural — Facade Pattern
 
 ## Concept Overview
 
@@ -11237,7 +11237,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
 
 ---
 
-# CONTINUED: Structural — Flyweight Pattern
+# Structural — Flyweight Pattern
 
 ## Concept Overview
 
@@ -12196,7 +12196,7 @@ for (let i = 0; i < 1000; i++) {
 
 ---
 
-# CONTINUED: Structural — Proxy Pattern
+# Structural — Proxy Pattern
 
 ## Concept Overview
 
@@ -13110,7 +13110,7 @@ formProxy.data.email = 'test@example.com';
 
 ---
 
-# CONTINUED: Behavioral — Chain of Responsibility Pattern
+# Behavioral — Chain of Responsibility Pattern
 
 ## Concept Overview
 
@@ -13946,7 +13946,7 @@ const result = await formValidator.validate({ email: 'test@example.com' });
 
 ---
 
-# CONTINUED: Behavioral — Command Pattern
+# Behavioral — Command Pattern
 
 ## Concept Overview
 

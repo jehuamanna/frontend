@@ -285,3 +285,4 @@ plt.tight_layout()
 plt.savefig('docs/images/functional_composition.png', dpi=300, bbox_inches='tight', facecolor='white')
 print("✓ Functional Composition architecture diagram generated successfully")
 
+

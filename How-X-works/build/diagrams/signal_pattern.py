@@ -230,3 +230,4 @@ plt.tight_layout()
 plt.savefig('docs/images/signal_pattern.png', dpi=300, bbox_inches='tight', facecolor='white')
 print("✓ Signal Pattern architecture diagram generated successfully")
 
+

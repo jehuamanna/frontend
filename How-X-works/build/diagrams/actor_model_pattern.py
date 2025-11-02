@@ -231,3 +231,4 @@ plt.tight_layout()
 plt.savefig('docs/images/actor_model_pattern.png', dpi=300, bbox_inches='tight', facecolor='white')
 print("✓ Actor Model Pattern diagram generated: docs/images/actor_model_pattern.png")
 
+

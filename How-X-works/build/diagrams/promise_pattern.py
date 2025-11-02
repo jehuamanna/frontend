@@ -196,3 +196,4 @@ plt.tight_layout()
 plt.savefig('docs/images/promise_pattern.png', dpi=300, bbox_inches='tight', facecolor='white')
 print("✓ Promise Pattern diagram generated: docs/images/promise_pattern.png")
 
+
