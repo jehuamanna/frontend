@@ -45883,3 +45883,1384 @@ Each pattern includes:
 - Completion Status: **100% COMPLETE**
 
 ---
+
+# Appendix: Promise Composition vs Native Promise APIs
+
+## Overview
+
+This appendix provides a comprehensive comparison between **Promise Composition Patterns** (custom utilities and combinators) and **Native Promise APIs** (built-in methods). Understanding when to use each approach is crucial for writing maintainable, performant, and idiomatic JavaScript.
+
+---
+
+## 1. Conceptual Differences
+
+### Native Promise APIs
+
+**Definition:** Built-in static methods and instance methods provided by the JavaScript `Promise` object.
+
+**Characteristics:**
+
+- **Standardized:** Part of ES2015+ specification
+- **Optimized:** Engine-level optimizations
+- **Limited scope:** Cover common scenarios only
+- **Zero dependencies:** Available in all modern environments
+- **Minimal control:** Fixed behavior, no customization
+
+**Core Methods:**
+
+- `Promise.all()` - Wait for all promises to fulfill
+- `Promise.race()` - Wait for first promise to settle
+- `Promise.any()` - Wait for first promise to fulfill (ES2021)
+- `Promise.allSettled()` - Wait for all promises to settle (ES2020)
+- `Promise.resolve()` / `Promise.reject()` - Create resolved/rejected promises
+
+### Promise Composition Patterns
+
+**Definition:** Custom utility functions that combine, transform, or control promises in ways not directly supported by native APIs.
+
+**Characteristics:**
+
+- **Flexible:** Can be customized for specific needs
+- **Composable:** Building blocks that combine for complex workflows
+- **Extended functionality:** Cover edge cases and advanced scenarios
+- **Learning curve:** Requires understanding of promise internals
+- **Maintenance overhead:** Custom code needs testing and documentation
+
+**Common Patterns:**
+
+- Concurrency control (rate limiting, pooling)
+- Retry logic with backoff strategies
+- Timeout wrappers
+- Cancellation and abort handling
+- Sequential processing
+- Fallback and failover mechanisms
+
+---
+
+## 2. Feature Comparison Matrix
+
+| Feature | Native Promise API | Composition Pattern | When to Use |
+|---------|-------------------|---------------------|-------------|
+| **Parallel Execution** | `Promise.all()` | `mapAsync()` | Native for simple cases; composition for transformations |
+| **First to Complete** | `Promise.race()` | Custom race with cleanup | Native for simple races; composition for resource cleanup |
+| **First Successful** | `Promise.any()` | `firstFulfilled()` | Native (ES2021+); composition for older environments |
+| **All Results** | `Promise.allSettled()` | `allSettledResults()` | Native for basic needs; composition for conditional failures |
+| **Concurrency Limit** | None | `pMap()`, `pLimit()` | Always use composition |
+| **Retry Logic** | None | `retry()`, `retryWithBackoff()` | Always use composition |
+| **Timeout** | None | `timeout()` | Always use composition |
+| **Cancellation** | None | `withAbort()`, `defer()` | Always use composition with AbortController |
+| **Sequential Processing** | None | `reduceAsync()`, `sequence()` | Always use composition |
+| **Filtering** | None | `filterAsync()` | Always use composition |
+| **Pipeline** | None | `pipeAsync()`, `composeAsync()` | Always use composition |
+| **Fallback/Failover** | None | `tryInOrder()` | Always use composition |
+
+---
+
+## 3. Detailed Comparisons
+
+### 3.1 Parallel Execution: `Promise.all()` vs `mapAsync()`
+
+#### Native: `Promise.all()`
+
+```js
+// Simple parallel execution
+const urls = ['url1', 'url2', 'url3'];
+const promises = urls.map(url => fetch(url));
+const results = await Promise.all(promises);
+```
+
+**Pros:**
+
+- Native, fast, zero overhead
+- Fail-fast behavior (stops on first rejection)
+- Well understood by all developers
+
+**Cons:**
+
+- No transformation in the same step
+- All-or-nothing (one failure rejects all)
+- No concurrency control
+- Promises start immediately when created
+
+#### Composition: `mapAsync()`
+
+```js
+// Parallel with transformation
+async function mapAsync(array, mapper) {
+ return Promise.all(array.map((item, i) => 
+ Promise.resolve().then(() => mapper(item, i))
+ ));
+}
+
+const urls = ['url1', 'url2', 'url3'];
+const results = await mapAsync(urls, async (url) => {
+ const response = await fetch(url);
+ return response.json(); // Transform in same step
+});
+```
+
+**Pros:**
+
+- Combines mapping and async operations
+- Mapper receives index
+- Lazy promise creation (via `.then()`)
+- More semantic for transformations
+
+**Cons:**
+
+- Slight overhead from wrapper
+- Still fail-fast like `Promise.all()`
+
+**When to Use:**
+
+- Use `Promise.all()` for straightforward parallel execution
+- Use `mapAsync()` when you need to transform data inline
+- Use both when readable code matters more than micro-optimizations
+
+---
+
+### 3.2 Race Conditions: `Promise.race()` vs Custom Race
+
+#### Native: `Promise.race()`
+
+```js
+// First to settle wins
+const result = await Promise.race([
+ fetch('https://api1.com/data'),
+ fetch('https://api2.com/data'),
+]);
+```
+
+**Pros:**
+
+- Simple and straightforward
+- Built-in optimization
+
+**Cons:**
+
+- No cleanup of losing promises
+- No control over resource disposal
+- Can't distinguish between resolve/reject
+- Losing promises continue running
+
+#### Composition: Race with Cleanup
+
+```js
+function raceWithCleanup(promises, onCancel) {
+ const controllers = promises.map(() => new AbortController());
+ 
+ const wrappedPromises = promises.map((p, i) => 
+ Promise.resolve(p).then(
+ value => ({ status: 'fulfilled', value, index: i }),
+ reason => ({ status: 'rejected', reason, index: i })
+ )
+ );
+ 
+ return Promise.race(wrappedPromises).then(result => {
+ // Cancel all other requests
+ controllers.forEach((ctrl, i) => {
+ if (i !== result.index) {
+ ctrl.abort();
+ onCancel?.(i);
+ }
+ });
+ 
+ if (result.status === 'rejected') throw result.reason;
+ return result.value;
+ });
+}
+
+// Usage with abort support
+const result = await raceWithCleanup([
+ fetch('https://api1.com/data', { signal: controllers[0].signal }),
+ fetch('https://api2.com/data', { signal: controllers[1].signal }),
+], (canceledIndex) => {
+ console.log(`Canceled request ${canceledIndex}`);
+});
+```
+
+**Pros:**
+
+- Clean up losing operations
+- Resource management
+- Prevent unnecessary work
+- Custom cancellation hooks
+
+**Cons:**
+
+- More complex implementation
+- Requires AbortController support
+- Additional memory overhead
+
+**When to Use:**
+
+- Use `Promise.race()` for simple scenarios or non-cancelable operations
+- Use custom race when requests are expensive or need cleanup
+- Always use composition for timeout patterns
+
+---
+
+### 3.3 Error Handling: `Promise.allSettled()` vs `allSettledResults()`
+
+#### Native: `Promise.allSettled()`
+
+```js
+const results = await Promise.allSettled([
+ fetch('url1'),
+ fetch('url2'),
+ fetch('url3')
+]);
+
+// Manual filtering
+const successful = results
+ .filter(r => r.status === 'fulfilled')
+ .map(r => r.value);
+ 
+const failed = results
+ .filter(r => r.status === 'rejected')
+ .map(r => r.reason);
+```
+
+**Pros:**
+
+- Native support (ES2020+)
+- Never rejects
+- Complete information about all promises
+
+**Cons:**
+
+- Requires manual filtering
+- No built-in threshold logic
+- Verbose for common use cases
+
+#### Composition: `allSettledResults()`
+
+```js
+async function allSettledResults(promises, { allowFailures = Infinity } = {}) {
+ const settled = await Promise.allSettled(promises);
+ const errors = settled.filter(s => s.status === 'rejected').map(s => s.reason);
+ const values = settled.filter(s => s.status === 'fulfilled').map(s => s.value);
+ 
+ if (errors.length > allowFailures) {
+ const err = new Error(`Too many failures: ${errors.length}`);
+ err.errors = errors;
+ throw err;
+ }
+ 
+ return { values, errors };
+}
+
+// Usage
+const { values, errors } = await allSettledResults(promises, { 
+ allowFailures: 2 // Fail if more than 2 promises reject
+});
+```
+
+**Pros:**
+
+- Pre-filtered results
+- Built-in failure threshold
+- Cleaner API for common patterns
+- Aggregated error handling
+
+**Cons:**
+
+- Custom implementation required
+- Additional abstraction layer
+
+**When to Use:**
+
+- Use `Promise.allSettled()` when you need raw results
+- Use composition when you have failure tolerance requirements
+- Use composition for cleaner code in repeated patterns
+
+---
+
+### 3.4 Concurrency Control: No Native API vs `pMap()`
+
+#### Problem: Native APIs Don't Limit Concurrency
+
+```js
+// BAD: Overwhelms server with 1000 parallel requests
+const urls = Array(1000).fill(null).map((_, i) => `https://api.com/item/${i}`);
+const results = await Promise.all(urls.map(url => fetch(url)));
+// May cause: rate limiting, memory issues, network congestion
+```
+
+#### Solution: `pMap()` Composition
+
+```js
+function pMap(inputs, mapper, concurrency = 5) {
+ const results = new Array(inputs.length);
+ let i = 0;
+
+ return new Promise((resolve, reject) => {
+ let active = 0;
+ 
+ function next() {
+ // All done
+ if (i >= inputs.length && active === 0) {
+ return resolve(results);
+ }
+ 
+ // Start new tasks up to concurrency limit
+ while (active < concurrency && i < inputs.length) {
+ const idx = i++;
+ active++;
+ 
+ Promise.resolve()
+ .then(() => mapper(inputs[idx], idx))
+ .then((res) => {
+ results[idx] = res;
+ active--;
+ next();
+ })
+ .catch(reject);
+ }
+ }
+ 
+ next();
+ });
+}
+
+// GOOD: Maximum 10 parallel requests
+const results = await pMap(urls, async (url) => {
+ const response = await fetch(url);
+ return response.json();
+}, 10);
+```
+
+**Why Composition is Essential:**
+
+- Prevents server overload
+- Manages memory usage
+- Respects rate limits
+- Maintains order of results
+- Essential for production systems
+
+**Performance Impact:**
+
+```js
+// Without concurrency control
+// 1000 requests × 100ms = 100ms (all parallel, but may fail)
+
+// With concurrency control (limit: 10)
+// 1000 requests ÷ 10 × 100ms = 10,000ms (slower but reliable)
+```
+
+---
+
+### 3.5 Retry Logic: No Native Support vs `retry()`/`retryWithBackoff()`
+
+#### Native Approach (Manual)
+
+```js
+// Manual retry - verbose and error-prone
+async function fetchWithRetry(url) {
+ let lastError;
+ for (let i = 0; i < 3; i++) {
+ try {
+ return await fetch(url);
+ } catch (err) {
+ lastError = err;
+ if (i < 2) {
+ await new Promise(r => setTimeout(r, 1000));
+ }
+ }
+ }
+ throw lastError;
+}
+```
+
+#### Composition: Simple Retry
+
+```js
+async function retry(fn, attempts = 3, delayMs = 1000) {
+ let lastError;
+ for (let i = 0; i < attempts; i++) {
+ try {
+ return await fn(i);
+ } catch (err) {
+ lastError = err;
+ if (i < attempts - 1) {
+ await new Promise(r => setTimeout(r, delayMs));
+ }
+ }
+ }
+ throw lastError;
+}
+
+// Usage
+const data = await retry(() => fetch(url), 5, 2000);
+```
+
+#### Composition: Exponential Backoff
+
+```js
+async function retryWithBackoff(fn, {
+ attempts = 5,
+ minDelay = 200,
+ maxDelay = 2000,
+ factor = 2,
+ jitter = true
+} = {}) {
+ let attempt = 0;
+ let err;
+ 
+ while (attempt < attempts) {
+ try {
+ return await fn(attempt);
+ } catch (e) {
+ err = e;
+ attempt++;
+ if (attempt >= attempts) break;
+ 
+ // Exponential backoff: 200ms, 400ms, 800ms, 1600ms, 2000ms
+ let delay = Math.min(minDelay * Math.pow(factor, attempt - 1), maxDelay);
+ 
+ // Add jitter to prevent thundering herd
+ if (jitter) delay = Math.random() * delay;
+ 
+ await new Promise(r => setTimeout(r, delay));
+ }
+ }
+ throw err;
+}
+
+// Usage
+const data = await retryWithBackoff(
+ () => fetch(url),
+ { attempts: 4, minDelay: 100, maxDelay: 5000 }
+);
+```
+
+**Why Composition is Essential:**
+
+- Network failures are common
+- Exponential backoff prevents server overload
+- Jitter prevents synchronized retries (thundering herd)
+- Configurable for different scenarios
+- Industry-standard approach
+
+**Real-World Example:**
+
+```js
+// Combining timeout + retry for robust API calls
+const robustFetch = (url) => 
+ retryWithBackoff(
+ () => timeout(fetch(url), 5000), // 5s timeout per attempt
+ { attempts: 3, minDelay: 1000, maxDelay: 10000 }
+ );
+
+const data = await robustFetch('https://api.example.com/data');
+```
+
+---
+
+### 3.6 Timeout Pattern: No Native Support vs `timeout()`
+
+#### Manual Timeout (Anti-pattern)
+
+```js
+// Naive approach - promise continues running!
+async function fetchWithTimeout(url, ms) {
+ const result = await Promise.race([
+ fetch(url),
+ new Promise((_, reject) => 
+ setTimeout(() => reject(new Error('Timeout')), ms)
+ )
+ ]);
+ return result;
+ // Problem: fetch continues even after timeout
+}
+```
+
+#### Composition: Proper Timeout
+
+```js
+function timeout(promise, ms, message = 'Timeout') {
+ const timer = new Promise((_, reject) =>
+ setTimeout(() => reject(new Error(message)), ms)
+ );
+ return Promise.race([promise, timer]);
+}
+
+// Better: with AbortController
+function timeoutWithAbort(promiseFactory, ms) {
+ const controller = new AbortController();
+ const { signal } = controller;
+ 
+ const timeoutPromise = new Promise((_, reject) => {
+ const id = setTimeout(() => {
+ controller.abort();
+ reject(new Error(`Timeout after ${ms}ms`));
+ }, ms);
+ 
+ // Clear timeout if promise resolves first
+ signal.addEventListener('abort', () => clearTimeout(id));
+ });
+ 
+ return Promise.race([
+ promiseFactory(signal),
+ timeoutPromise
+ ]);
+}
+
+// Usage
+const data = await timeoutWithAbort(
+ (signal) => fetch(url, { signal }),
+ 5000
+);
+```
+
+**Why Composition is Essential:**
+
+- Prevents hanging operations
+- Essential for production reliability
+- User experience (no infinite waiting)
+- Resource management
+- Proper cancellation support
+
+---
+
+### 3.7 Sequential Processing: No Native Support vs `sequence()`/`reduceAsync()`
+
+#### Problem: `Promise.all()` Runs in Parallel
+
+```js
+// This runs ALL promises in parallel, not sequentially
+const results = await Promise.all([
+ processStep1(),
+ processStep2(), // Starts immediately!
+ processStep3() // Starts immediately!
+]);
+```
+
+#### Composition: Sequential Execution
+
+```js
+// Simple sequential processing
+async function sequence(funcs, initial) {
+ let acc = initial;
+ for (const fn of funcs) {
+ acc = await fn(acc);
+ }
+ return acc;
+}
+
+// Usage
+const result = await sequence([
+ (data) => fetchData(data),
+ (data) => processData(data),
+ (data) => saveData(data)
+], initialData);
+```
+
+#### Composition: Async Reduce
+
+```js
+async function reduceAsync(array, reducer, initial) {
+ let acc = initial;
+ for (let i = 0; i < array.length; i++) {
+ acc = await reducer(acc, array[i], i);
+ }
+ return acc;
+}
+
+// Usage: process items one by one
+const total = await reduceAsync(
+ items,
+ async (sum, item) => {
+ const value = await fetchItemValue(item);
+ return sum + value;
+ },
+ 0
+);
+```
+
+**When Sequential is Necessary:**
+
+- Operations depend on previous results
+- Rate limiting requirements
+- Database transactions
+- Stateful operations
+- Order-sensitive processing
+
+---
+
+### 3.8 Pipeline/Composition: No Native Support vs `pipeAsync()`
+
+#### Composition: Async Pipeline
+
+```js
+// Left-to-right composition
+function pipeAsync(...fns) {
+ return async (input) => {
+ let v = input;
+ for (const fn of fns) {
+ v = await fn(v);
+ }
+ return v;
+ };
+}
+
+// Right-to-left composition
+function composeAsync(...fns) {
+ return pipeAsync(...fns.reverse());
+}
+
+// Usage
+const processUser = pipeAsync(
+ fetchUserFromDB,
+ enrichWithProfile,
+ validatePermissions,
+ transformToDTO,
+ cacheResult
+);
+
+const user = await processUser(userId);
+```
+
+**Why Composition is Essential:**
+
+- Functional programming paradigm
+- Reusable transformation chains
+- Declarative code
+- Easy to test individual steps
+- Common in data processing pipelines
+
+---
+
+### 3.9 Fallback/Failover: No Native Support vs `tryInOrder()`
+
+#### Composition: Failover Pattern
+
+```js
+async function tryInOrder(fns) {
+ let lastErr;
+ for (const fn of fns) {
+ try {
+ return await fn();
+ } catch (e) {
+ lastErr = e;
+ }
+ }
+ throw lastErr;
+}
+
+// Usage: try multiple data sources
+const data = await tryInOrder([
+ () => fetch('https://primary-api.com/data'),
+ () => fetch('https://secondary-api.com/data'),
+ () => fetch('https://backup-api.com/data'),
+ () => getFromLocalCache(),
+ () => ({ fallbackData: true })
+]);
+```
+
+**Why Composition is Essential:**
+
+- High availability systems
+- Graceful degradation
+- Multi-source data fetching
+- CDN failover
+- Essential for resilient applications
+
+---
+
+## 4. Performance Considerations
+
+### Memory Usage
+
+| Pattern | Memory Overhead | Notes |
+|---------|----------------|-------|
+| `Promise.all()` | Low | All promises created upfront |
+| `pMap()` | Medium | Controlled concurrency reduces memory |
+| `sequence()` | Lowest | One promise at a time |
+| `retry()` | Low | Reuses same operation |
+| Custom wrappers | +10-20% | Minimal overhead for abstraction |
+
+### Execution Speed
+
+```js
+// Benchmark comparison (1000 operations)
+
+// Native Promise.all: 100ms
+await Promise.all(promises);
+
+// mapAsync wrapper: 105ms (+5%)
+await mapAsync(items, async x => x);
+
+// pMap with concurrency=10: 1000ms (10x slower but controlled)
+await pMap(items, async x => x, 10);
+
+// sequence: 10000ms (100x slower, fully sequential)
+await sequence(funcs, initial);
+```
+
+**Key Insights:**
+
+- Composition wrappers add minimal overhead (typically <5%)
+- Concurrency control trades speed for reliability
+- Sequential processing is intentionally slower
+- Choose based on requirements, not pure speed
+
+---
+
+## 5. Decision Matrix: When to Use What
+
+### Use Native Promise APIs When:
+
+ **Simple parallel execution without transformation**
+```js
+await Promise.all([p1, p2, p3]);
+```
+
+ **First-to-complete is sufficient**
+```js
+await Promise.race([fetch1, fetch2]);
+```
+
+ **Need all results regardless of success/failure**
+```js
+await Promise.allSettled([p1, p2, p3]);
+```
+
+ **First successful result (modern environments)**
+```js
+await Promise.any([p1, p2, p3]);
+```
+
+ **Code simplicity is priority over features**
+
+ **Standard behavior is sufficient**
+
+### Use Promise Composition When:
+
+ **Need concurrency control**
+```js
+await pMap(items, fetcher, 10);
+```
+
+ **Retry logic required**
+```js
+await retry(operation, 3);
+```
+
+ **Timeout enforcement needed**
+```js
+await timeout(promise, 5000);
+```
+
+ **Sequential processing required**
+```js
+await sequence(operations, initial);
+```
+
+ **Cancellation support needed**
+```js
+const { promise, controller } = withAbort(signal => fetch(url, { signal }));
+```
+
+ **Fallback/failover patterns**
+```js
+await tryInOrder([primary, secondary, cache]);
+```
+
+ **Complex transformation pipelines**
+```js
+await pipeAsync(step1, step2, step3)(data);
+```
+
+ **Production systems requiring reliability**
+
+---
+
+## 6. Best Practices
+
+### Combining Native and Composition
+
+```js
+// Excellent: Use both where appropriate
+async function robustDataFetch(urls) {
+ // Composition for concurrency control
+ const results = await pMap(
+ urls,
+ async (url) => {
+ // Composition for retry + timeout
+ return await retryWithBackoff(
+ () => timeout(fetch(url), 5000),
+ { attempts: 3 }
+ );
+ },
+ 5 // Max 5 parallel
+ );
+ 
+ // Native for results handling
+ const settled = await Promise.allSettled(
+ results.map(r => r.json())
+ );
+ 
+ return settled
+ .filter(s => s.status === 'fulfilled')
+ .map(s => s.value);
+}
+```
+
+### Lazy Promise Creation
+
+```js
+// BAD: Promises start immediately
+const promises = urls.map(url => fetch(url)); // All start NOW
+await pMap(promises, x => x, 5); // Too late to control
+
+// GOOD: Lazy creation
+await pMap(urls, url => fetch(url), 5); // Start as needed
+```
+
+### Error Aggregation
+
+```js
+// Comprehensive error handling
+async function fetchMultiple(urls) {
+ const { values, errors } = await allSettledResults(
+ urls.map(url => 
+ retryWithBackoff(() => fetch(url), { attempts: 2 })
+ ),
+ { allowFailures: Math.floor(urls.length * 0.2) } // 20% failure tolerance
+ );
+ 
+ if (errors.length > 0) {
+ console.warn(`${errors.length} requests failed:`, errors);
+ }
+ 
+ return values;
+}
+```
+
+### Resource Cleanup
+
+```js
+// Always clean up resources
+async function fetchWithCleanup(url) {
+ const controller = new AbortController();
+ 
+ try {
+ return await timeout(
+ fetch(url, { signal: controller.signal }),
+ 5000
+ );
+ } catch (err) {
+ controller.abort(); // Clean up
+ throw err;
+ }
+}
+```
+
+---
+
+## 7. Common Patterns Combining Both Approaches
+
+### Pattern 1: Resilient API Client
+
+```js
+class ResilientAPIClient {
+ constructor(baseURL, options = {}) {
+ this.baseURL = baseURL;
+ this.concurrency = options.concurrency || 5;
+ this.timeout = options.timeout || 5000;
+ this.retries = options.retries || 3;
+ }
+ 
+ async fetch(endpoint) {
+ return await retryWithBackoff(
+ () => timeout(
+ fetch(`${this.baseURL}${endpoint}`),
+ this.timeout
+ ),
+ { attempts: this.retries }
+ );
+ }
+ 
+ async fetchMany(endpoints) {
+ return await pMap(
+ endpoints,
+ ep => this.fetch(ep),
+ this.concurrency
+ );
+ }
+ 
+ async fetchWithFallback(primaryEndpoint, fallbackEndpoints) {
+ return await tryInOrder([
+ () => this.fetch(primaryEndpoint),
+ ...fallbackEndpoints.map(ep => () => this.fetch(ep))
+ ]);
+ }
+}
+
+// Usage
+const client = new ResilientAPIClient('https://api.example.com', {
+ concurrency: 10,
+ timeout: 3000,
+ retries: 2
+});
+
+const data = await client.fetchMany(['/users', '/posts', '/comments']);
+```
+
+### Pattern 2: Data Processing Pipeline
+
+```js
+const processDataPipeline = pipeAsync(
+ // Stage 1: Fetch with retry
+ async (ids) => await pMap(
+ ids,
+ id => retry(() => fetchData(id), 3),
+ 5
+ ),
+ 
+ // Stage 2: Transform in parallel
+ async (dataArray) => await Promise.all(
+ dataArray.map(transform)
+ ),
+ 
+ // Stage 3: Validate sequentially (stateful)
+ async (transformed) => await reduceAsync(
+ transformed,
+ async (acc, item) => {
+ const isValid = await validate(item, acc);
+ return isValid ? [...acc, item] : acc;
+ },
+ []
+ ),
+ 
+ // Stage 4: Save with fallback
+ async (validated) => await tryInOrder([
+ () => saveToPrimary(validated),
+ () => saveToSecondary(validated),
+ () => saveToCache(validated)
+ ])
+);
+
+// Execute pipeline
+const result = await processDataPipeline(userIds);
+```
+
+### Pattern 3: Parallel Batching with Progress
+
+```js
+async function batchProcessWithProgress(items, processor, batchSize = 10) {
+ const batches = [];
+ for (let i = 0; i < items.length; i += batchSize) {
+ batches.push(items.slice(i, i + batchSize));
+ }
+ 
+ let completed = 0;
+ const results = [];
+ 
+ // Process batches sequentially, items within batch in parallel
+ for (const batch of batches) {
+ const batchResults = await Promise.allSettled(
+ batch.map(item => processor(item))
+ );
+ 
+ results.push(...batchResults);
+ completed += batch.length;
+ console.log(`Progress: ${completed}/${items.length}`);
+ }
+ 
+ const successful = results
+ .filter(r => r.status === 'fulfilled')
+ .map(r => r.value);
+ 
+ const failed = results
+ .filter(r => r.status === 'rejected')
+ .map(r => r.reason);
+ 
+ return { successful, failed };
+}
+
+// Usage
+const { successful, failed } = await batchProcessWithProgress(
+ items,
+ async (item) => {
+ return await retryWithBackoff(() => process(item), { attempts: 2 });
+ },
+ 50
+);
+```
+
+---
+
+## 8. Testing Considerations
+
+### Testing Native APIs
+
+```js
+// Simple, straightforward tests
+test('Promise.all resolves when all succeed', async () => {
+ const results = await Promise.all([
+ Promise.resolve(1),
+ Promise.resolve(2),
+ Promise.resolve(3)
+ ]);
+ expect(results).toEqual([1, 2, 3]);
+});
+```
+
+### Testing Composition Patterns
+
+```js
+// Requires more sophisticated tests
+test('pMap respects concurrency limit', async () => {
+ let concurrent = 0;
+ let maxConcurrent = 0;
+ 
+ const items = Array(10).fill(0);
+ 
+ await pMap(items, async () => {
+ concurrent++;
+ maxConcurrent = Math.max(maxConcurrent, concurrent);
+ await new Promise(r => setTimeout(r, 10));
+ concurrent--;
+ }, 3);
+ 
+ expect(maxConcurrent).toBe(3);
+});
+
+test('retry attempts correct number of times', async () => {
+ let attempts = 0;
+ const fn = jest.fn(async () => {
+ attempts++;
+ throw new Error('fail');
+ });
+ 
+ await expect(retry(fn, 3)).rejects.toThrow('fail');
+ expect(attempts).toBe(3);
+});
+```
+
+---
+
+## 9. Migration Guide
+
+### From Naive Implementation to Composition
+
+#### Before: Uncontrolled Parallel Execution
+
+```js
+async function fetchAllUsers(userIds) {
+ const promises = userIds.map(id => fetch(`/api/users/${id}`));
+ return await Promise.all(promises);
+}
+// Problems: No error handling, no retry, no concurrency control
+```
+
+#### After: Robust Composition
+
+```js
+async function fetchAllUsers(userIds) {
+ return await pMap(
+ userIds,
+ async (id) => {
+ return await retryWithBackoff(
+ () => timeout(
+ fetch(`/api/users/${id}`),
+ 5000
+ ),
+ { attempts: 3, minDelay: 500 }
+ );
+ },
+ 10 // Max 10 concurrent
+ );
+}
+```
+
+### Gradual Adoption Strategy
+
+1. **Start with native APIs** for simple cases
+2. **Add timeout wrappers** for network requests
+3. **Implement retry logic** for flaky operations
+4. **Add concurrency control** for bulk operations
+5. **Build composition utilities** as library functions
+6. **Create reusable patterns** for common scenarios
+
+---
+
+## 10. Performance Optimization Tips
+
+### Tip 1: Avoid Creating Unnecessary Promises
+
+```js
+// BAD: Creates all promises upfront
+const promises = items.map(item => expensiveOperation(item));
+const limited = await pMap(promises, x => x, 5);
+
+// GOOD: Lazy creation
+const limited = await pMap(items, item => expensiveOperation(item), 5);
+```
+
+### Tip 2: Use Native APIs When Possible
+
+```js
+// GOOD: Native is faster for simple cases
+await Promise.all([p1, p2, p3]);
+
+// OVERKILL: Don't wrap unnecessarily
+await pMap([p1, p2, p3], x => x, 3);
+```
+
+### Tip 3: Batch Operations Strategically
+
+```js
+// Optimal: Balance parallelism and resource usage
+const BATCH_SIZE = 50;
+const CONCURRENCY = 10;
+
+for (let i = 0; i < items.length; i += BATCH_SIZE) {
+ const batch = items.slice(i, i + BATCH_SIZE);
+ await pMap(batch, processor, CONCURRENCY);
+}
+```
+
+### Tip 4: Profile Before Optimizing
+
+```js
+console.time('operation');
+
+// Try native first
+await Promise.all(operations);
+// vs
+await pMap(operations, x => x, 5);
+
+console.timeEnd('operation');
+// Make data-driven decisions
+```
+
+---
+
+## 11. Real-World Use Case Comparisons
+
+### Use Case 1: Fetching User Data
+
+**Scenario:** Fetch 100 user profiles from an API
+
+**Native Approach:**
+```js
+const userIds = Array(100).fill(0).map((_, i) => i);
+const promises = userIds.map(id => fetch(`/api/users/${id}`));
+const responses = await Promise.all(promises);
+const users = await Promise.all(responses.map(r => r.json()));
+```
+
+**Problems:**
+
+- 100 simultaneous connections (may hit limits)
+- No retry on failure
+- One failure fails everything
+- No timeout protection
+
+**Composition Approach:**
+```js
+const users = await pMap(
+ userIds,
+ async (id) => {
+ const response = await retryWithBackoff(
+ () => timeout(fetch(`/api/users/${id}`), 3000),
+ { attempts: 2 }
+ );
+ return response.json();
+ },
+ 10 // Max 10 concurrent requests
+);
+```
+
+**Benefits:**
+
+- Controlled concurrency (respects rate limits)
+- Automatic retry (handles transient failures)
+- Timeout protection (no hanging requests)
+- Production-ready reliability
+
+---
+
+### Use Case 2: Image Processing Pipeline
+
+**Scenario:** Download, resize, and upload 1000 images
+
+**Native Approach:**
+```js
+// Downloads all at once - memory explosion!
+const images = await Promise.all(urls.map(url => fetch(url)));
+const processed = await Promise.all(images.map(img => resize(img)));
+await Promise.all(processed.map(img => upload(img)));
+```
+
+**Composition Approach:**
+```js
+const pipeline = pipeAsync(
+ async (url) => await timeout(fetch(url), 10000),
+ async (response) => await response.blob(),
+ async (blob) => await resize(blob, { width: 800 }),
+ async (processed) => await retry(() => upload(processed), 3)
+);
+
+// Process in controlled batches
+const results = await pMap(urls, pipeline, 5);
+```
+
+**Benefits:**
+
+- Memory efficient (only 5 in flight at once)
+- Clear data transformation steps
+- Individual timeout and retry per stage
+- Scalable to any number of images
+
+---
+
+### Use Case 3: Microservices Aggregation
+
+**Scenario:** Fetch data from multiple microservices, some optional
+
+**Native Approach:**
+```js
+const results = await Promise.allSettled([
+ fetch('/api/users/123'),
+ fetch('/api/orders/123'),
+ fetch('/api/recommendations/123'), // Optional
+ fetch('/api/reviews/123') // Optional
+]);
+
+// Manual filtering
+const [users, orders, recommendations, reviews] = results;
+const data = {
+ user: users.status === 'fulfilled' ? users.value : null,
+ orders: orders.status === 'fulfilled' ? orders.value : null,
+ // ... tedious manual extraction
+};
+```
+
+**Composition Approach:**
+```js
+async function aggregateUserData(userId) {
+ // Critical data with retry
+ const [user, orders] = await Promise.all([
+ retry(() => fetch(`/api/users/${userId}`), 3),
+ retry(() => fetch(`/api/orders/${userId}`), 3)
+ ]);
+ 
+ // Optional data with fallback
+ const { values: optional } = await allSettledResults([
+ fetch(`/api/recommendations/${userId}`),
+ fetch(`/api/reviews/${userId}`)
+ ], { allowFailures: 2 });
+ 
+ return {
+ user: await user.json(),
+ orders: await orders.json(),
+ recommendations: optional[0] ? await optional[0].json() : [],
+ reviews: optional[1] ? await optional[1].json() : []
+ };
+}
+```
+
+**Benefits:**
+
+- Clear separation of critical vs optional
+- Automatic retry for critical services
+- Graceful degradation for optional services
+- Cleaner error handling
+
+---
+
+## 12. Summary Table
+
+| Aspect | Native Promise APIs | Promise Composition |
+|--------|-------------------|---------------------|
+| **Learning Curve** | Low - standard JavaScript | Medium - requires understanding patterns |
+| **Code Volume** | Minimal | More code, but reusable |
+| **Performance** | Fastest (engine-optimized) | Minimal overhead (~5%) |
+| **Flexibility** | Limited to built-in behavior | Highly customizable |
+| **Error Handling** | Basic | Advanced with retries, fallbacks |
+| **Concurrency Control** | None | Full control with limits |
+| **Resource Management** | Limited | Excellent with cleanup |
+| **Production Readiness** | Adequate for simple cases | Essential for robust systems |
+| **Testability** | Easy | Requires more test coverage |
+| **Maintenance** | Minimal | Ongoing for custom utilities |
+| **Best For** | Simple parallel operations | Complex async workflows |
+
+---
+
+## 13. Recommendations
+
+### For Simple Applications
+
+1. Start with native Promise APIs
+2. Add basic error handling
+3. Use `Promise.allSettled()` for fault tolerance
+4. Add timeouts as needed
+
+### For Production Applications
+
+1. Build a utility library of composition patterns
+2. Use concurrency control for all bulk operations
+3. Implement retry logic with exponential backoff
+4. Add timeout protection for all network requests
+5. Use failover patterns for critical paths
+6. Monitor and log async operation metrics
+
+### For Library/Framework Authors
+
+1. Expose both native and composition APIs
+2. Provide sensible defaults
+3. Make patterns configurable
+4. Document performance characteristics
+5. Support cancellation/cleanup
+6. Consider implementing `p-limit`, `p-retry`, `p-timeout` patterns
+
+---
+
+## 14. Further Reading & Resources
+
+### Native Promise Specifications
+
+- **ECMAScript Promise Spec:** [ECMA-262](https://tc39.es/ecma262/#sec-promise-objects)
+- **Promise.any() (ES2021):** [TC39 Proposal](https://github.com/tc39/proposal-promise-any)
+- **Promise.allSettled() (ES2020):** [TC39 Proposal](https://github.com/tc39/proposal-promise-allSettled)
+
+### Popular Composition Libraries
+
+- **p-limit:** Concurrency control - [sindresorhus/p-limit](https://github.com/sindresorhus/p-limit)
+- **p-retry:** Retry with backoff - [sindresorhus/p-retry](https://github.com/sindresorhus/p-retry)
+- **p-timeout:** Promise timeout - [sindresorhus/p-timeout](https://github.com/sindresorhus/p-timeout)
+- **Bluebird:** Feature-rich promise library - [petkaantonov/bluebird](https://github.com/petkaantonov/bluebird)
+- **promise-fun:** Collection of promise utilities - [sindresorhus/promise-fun](https://github.com/sindresorhus/promise-fun)
+
+### Patterns & Best Practices
+
+- **Async Patterns:** [MDN Web Docs - Using Promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_promises)
+- **Error Handling:** [JavaScript.info - Promise Error Handling](https://javascript.info/promise-error-handling)
+- **Performance:** [V8 Blog - Fast Async Functions](https://v8.dev/blog/fast-async)
+
+---
+
+## Conclusion
+
+**Native Promise APIs** and **Promise Composition Patterns** are complementary tools, not competitors:
+
+- **Use native APIs** as your foundation for simple, straightforward async operations
+- **Use composition patterns** to build robust, production-ready async workflows
+- **Combine both** for optimal results - native performance where possible, composition for advanced features
+
+The key is understanding when each approach is appropriate:
+
+- Native APIs excel at simple, standard operations
+- Composition patterns are essential for complex, real-world requirements
+
+In production systems, you'll almost always need both. Start simple with native APIs, and progressively adopt composition patterns as your requirements grow in complexity.
+
+---
+
+*End of Appendix*
+
+---
