@@ -1,0 +1,75 @@
+{
+  "Creational": {
+    "Constructor Pattern": "done",
+    "Factory Pattern": "done",
+    "Abstract Factory Pattern": "done",
+    "Builder Pattern": "done",
+    "Prototype Pattern": "done",
+    "Singleton Pattern": "done",
+    "Object Pool Pattern": "done"
+  },
+  "Structural": {
+    "Adapter Pattern": "done",
+    "Bridge Pattern": "done",
+    "Composite Pattern": "done",
+    "Decorator Pattern": "done",
+    "Facade Pattern": "done",
+    "Flyweight Pattern": "done",
+    "Proxy Pattern": "done"
+  },
+  "Behavioral": {
+    "Chain of Responsibility": "done",
+    "Command Pattern": "done",
+    "Iterator Pattern": "done",
+    "Mediator Pattern": "done",
+    "Memento Pattern": "done",
+    "Observer Pattern": "done",
+    "Pub/Sub Pattern": "done",
+    "State Pattern": "done",
+    "Strategy Pattern": "done",
+    "Template Method Pattern": "done",
+    "Visitor Pattern": "done",
+    "Interpreter Pattern": "done"
+  },
+  "Architectural": {
+    "MVC": "done",
+    "MVP": "done",
+    "MVVM": "done",
+    "Flux": "done",
+    "Redux": "done",
+    "CQRS": "done",
+    "Event Sourcing": "done",
+    "Micro-Frontend": "done",
+    "Service Locator": "done",
+    "Dependency Injection": "done"
+  },
+  "Concurrency_Reactive": {
+    "Reactor Pattern": "done",
+    "Scheduler Pattern": "done",
+    "Promise Pattern": "done",
+    "Observer (Reactive Streams)": "done",
+    "Actor Model": "done",
+    "Async Iterator Pattern": "done",
+    "Pipeline Pattern": "done",
+    "Signal Pattern": "done"
+  },
+  "JS_Idioms": {
+    "Module Pattern": "done",
+    "Revealing Module Pattern": "done",
+    "Mixin Pattern": "done",
+    "Functional Composition": "done",
+    "Currying / Partial Application": "done",
+    "Null Object Pattern": "done"
+  },
+  "Advanced_Browser_Patterns": {
+    "Virtual DOM Diff-Patch": "done",
+    "Mutation Observer Pattern": "done",
+    "Event Delegation Pattern": "done",
+    "OffscreenCanvas Pattern": "done",
+    "BroadcastChannel Pattern": "done",
+    "Fiber Tree Pattern": "done",
+    "CRDT Pattern": "done",
+    "Task Queue / Idle Callback": "done",
+    "WeakMap Cache Pattern": "done"
+  }
+}
