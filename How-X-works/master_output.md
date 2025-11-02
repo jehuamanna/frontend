@@ -7797,6 +7797,7 @@ await persistence.saveObject('largeData', { /* large object */ });
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - **Decoupling**: Abstraction and implementation vary independently.
 - **Reduced Class Count**: n + m classes instead of n × m.
 - **Runtime Flexibility**: Switch implementations dynamically.
@@ -7804,17 +7805,20 @@ await persistence.saveObject('largeData', { /* large object */ });
 - **Open/Closed Principle**: Extend abstraction or implementation without modifying the other.
 
 **Disadvantages:**
+
 - **Complexity**: More classes and indirection than simple inheritance.
 - **Learning Curve**: Harder to understand than straightforward inheritance.
 - **Indirection**: Extra layer between client and implementation.
 - **Over-Engineering**: Sometimes simple inheritance suffices.
 
 **Performance Considerations:**
+
 - Minimal overhead (single reference indirection)
 - Composition is slightly slower than inheritance (negligible in practice)
 - Benefits of flexibility outweigh tiny performance cost
 
 **When to Use:**
+
 - Multiple dimensions of variation
 - Need to switch implementations at runtime
 - Abstraction and implementation evolve independently
@@ -7822,6 +7826,7 @@ await persistence.saveObject('largeData', { /* large object */ });
 - Platform-independent design required
 
 **When NOT to Use:**
+
 - Single dimension of variation (use simple inheritance)
 - Implementation fixed at compile time
 - Adds unnecessary complexity
@@ -9036,6 +9041,7 @@ charactersGroup.setOpacity(0.5);
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - **Uniform Interface**: Treat simple and complex objects identically.
 - **Recursive Operations**: Natural handling of tree structures.
 - **Simplified Client**: No type checking; single interface for all objects.
@@ -9043,24 +9049,28 @@ charactersGroup.setOpacity(0.5);
 - **Open/Closed Principle**: Extend without modifying existing code.
 
 **Disadvantages:**
+
 - **Overly General**: Hard to restrict tree to specific types (e.g., only certain children allowed).
 - **Type Safety**: All components share same interface, even if operations don't make sense for leaves (e.g., `add()` on a file).
 - **Performance Overhead**: Recursive operations can be slow on deep trees.
 - **Complexity**: Understanding tree relationships requires mental model.
 
 **Performance Considerations:**
+
 - Recursive calls can hit stack limits on very deep trees (>10,000 levels)
 - Tree traversal is O(n) where n is total number of nodes
 - Cache aggregate operations (size, count) if tree changes infrequently
 - Consider iterative traversal with explicit stack for deep trees
 
 **When to Use:**
+
 - Tree structures (part-whole hierarchies)
 - Operations should apply uniformly to all nodes
 - Client shouldn't distinguish between simple and complex objects
 - Recursive composition is natural for the domain
 
 **When NOT to Use:**
+
 - Flat structures (no hierarchy)
 - Operations differ significantly between leaves and composites
 - Need strict type restrictions on children
@@ -10123,6 +10133,7 @@ const response = await client.request('https://api.example.com/data');
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - **Open/Closed Principle**: Extend without modifying original classes.
 - **Single Responsibility**: Each decorator has one job.
 - **Flexible Combinations**: Mix and match decorators dynamically.
@@ -10130,6 +10141,7 @@ const response = await client.request('https://api.example.com/data');
 - **Reusable**: Decorators can wrap different components.
 
 **Disadvantages:**
+
 - **Complexity**: Many small classes/functions; harder to understand flow.
 - **Debugging Difficulty**: Stack traces through multiple decorators are confusing.
 - **Order Matters**: Decorator order affects behavior (not commutative).
@@ -10137,12 +10149,14 @@ const response = await client.request('https://api.example.com/data');
 - **Identity Problems**: Wrapped objects have different identities than originals.
 
 **Performance Considerations:**
+
 - Each decorator adds one function call (minimal overhead)
 - Deep decorator stacks (>10) can impact performance in hot paths
 - Consider flattening decorators for performance-critical code
 - Memoization decorators trade memory for CPU
 
 **When to Use:**
+
 - Need to add responsibilities to individual objects dynamically
 - Want to combine multiple behaviors flexibly
 - Subclassing would create too many classes
@@ -10150,6 +10164,7 @@ const response = await client.request('https://api.example.com/data');
 - Following Single Responsibility and Open/Closed principles
 
 **When NOT to Use:**
+
 - Simple scenarios where inheritance suffices
 - Behaviors are fixed and don't need combinations
 - Performance is critical and indirection unacceptable
@@ -11146,6 +11161,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - **Simplicity**: Easy-to-use interface reduces learning curve.
 - **Decoupling**: Client code isolated from subsystem implementation.
 - **Maintainability**: Changes to subsystem don't affect client code.
@@ -11153,18 +11169,21 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
 - **Layering**: Clear separation between layers of application.
 
 **Disadvantages:**
+
 - **Limited Functionality**: Facade might not expose all subsystem features.
 - **Additional Layer**: Adds indirection (minimal performance impact).
 - **Maintenance Burden**: Facade must be updated when subsystem evolves.
 - **God Object Risk**: Facade can become bloated if it tries to do too much.
 
 **Performance Considerations:**
+
 - Minimal overhead (single method call forwarding)
 - May cache expensive operations internally
 - Can optimize common use cases
 - Trade-off: convenience vs. full control
 
 **When to Use:**
+
 - Subsystem is complex with many interdependent classes
 - Need to provide simple interface for common tasks
 - Want to decouple client code from subsystem
@@ -11172,6 +11191,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
 - Simplifying third-party library usage
 
 **When NOT to Use:**
+
 - Subsystem is already simple
 - Need full access to all subsystem features
 - Adds unnecessary indirection
@@ -12098,6 +12118,7 @@ for (let i = 0; i < 1000; i++) {
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - **Massive Memory Savings**: Can reduce memory by 90%+ when many objects share data.
 - **Improved Cache Performance**: Fewer objects improve CPU cache hit rates.
 - **Reduced GC Pressure**: Fewer objects mean less garbage collection overhead.
@@ -12105,6 +12126,7 @@ for (let i = 0; i < 1000; i++) {
 - **Scalability**: Enable applications to handle 10x-100x more objects.
 
 **Disadvantages:**
+
 - **Complexity**: Separating intrinsic/extrinsic state adds design complexity.
 - **Runtime Cost**: Factory lookups and extrinsic state management add overhead.
 - **Loss of Identity**: Shared objects lose individual identity.
@@ -12112,12 +12134,14 @@ for (let i = 0; i < 1000; i++) {
 - **Not Always Beneficial**: Only helps when many objects share common data.
 
 **Performance Characteristics:**
+
 - Factory lookup: O(1) hash table lookup
 - Memory: O(unique states) instead of O(total objects)
 - Best when: Number of unique states << Number of objects
 - Break-even point: Usually 3+ objects sharing same state
 
 **When to Use:**
+
 - Large numbers of similar objects (thousands to millions)
 - Significant portion of state can be shared
 - Memory is constrained
@@ -12125,6 +12149,7 @@ for (let i = 0; i < 1000; i++) {
 - Object identity not important
 
 **When NOT to Use:**
+
 - Small number of objects (<100)
 - Objects have mostly unique state
 - Memory not constrained
@@ -13005,6 +13030,7 @@ formProxy.data.email = 'test@example.com';
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - **Lazy Initialization**: Delay expensive operations until needed.
 - **Access Control**: Centralized security and validation logic.
 - **Caching**: Transparent caching without modifying real object.
@@ -13012,18 +13038,21 @@ formProxy.data.email = 'test@example.com';
 - **Decoupling**: Client independent of real object's location/implementation.
 
 **Disadvantages:**
+
 - **Indirection**: Extra layer adds slight performance overhead.
 - **Complexity**: More classes to understand and maintain.
 - **Delayed Errors**: Lazy proxies may fail later than expected.
 - **Debugging**: Stack traces through proxies harder to follow.
 
 **Performance Considerations:**
+
 - ES6 Proxy has minimal overhead (microseconds per operation)
 - Virtual proxies eliminate waste from unused expensive objects
 - Caching proxies trade memory for speed
 - Remote proxies add network latency but enable distribution
 
 **When to Use:**
+
 - Object creation is expensive and should be delayed
 - Access control or validation needed
 - Caching would improve performance
@@ -13031,6 +13060,7 @@ formProxy.data.email = 'test@example.com';
 - Remote objects need local representatives
 
 **When NOT to Use:**
+
 - Simple, cheap objects
 - No control logic needed
 - Adds unnecessary complexity
@@ -13841,6 +13871,7 @@ const result = await formValidator.validate({ email: 'test@example.com' });
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - **Decoupling**: Sender doesn't know which handler will process request.
 - **Flexibility**: Add/remove/reorder handlers at runtime.
 - **Single Responsibility**: Each handler focuses on one concern.
@@ -13848,17 +13879,20 @@ const result = await formValidator.validate({ email: 'test@example.com' });
 - **Dynamic Configuration**: Chain structure determined at runtime.
 
 **Disadvantages:**
+
 - **No Guarantee**: Request might not be handled if no handler processes it.
 - **Performance**: Request might traverse entire chain before processing.
 - **Debugging**: Hard to trace which handler processed request.
 - **Implicit Flow**: Request flow not obvious from code structure.
 
 **Performance Characteristics:**
+
 - Worst case: O(n) where n is chain length
 - Best case: O(1) if first handler processes
 - Average: O(n/2) if handlers evenly distributed
 
 **When to Use:**
+
 - Multiple objects may handle request
 - Handler not known in advance
 - Set of handlers should be dynamic
@@ -13866,6 +13900,7 @@ const result = await formValidator.validate({ email: 'test@example.com' });
 - Request processing order matters
 
 **When NOT to Use:**
+
 - Single obvious handler
 - Performance critical (avoid chain traversal)
 - Handler must be determined statically
@@ -14617,6 +14652,7 @@ customElements.define('undoable-input', UndoableInput);
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - **Undo/Redo**: Natural support for reversible operations.
 - **Decoupling**: Invoker doesn't know about receiver.
 - **Extensibility**: Easy to add new commands.
@@ -14625,18 +14661,21 @@ customElements.define('undoable-input', UndoableInput);
 - **Delayed Execution**: Queue commands for later execution.
 
 **Disadvantages:**
+
 - **Increased Classes**: Each operation needs a command class.
 - **Memory Overhead**: Storing command history consumes memory.
 - **Complexity**: More objects and indirection than direct calls.
 - **State Management**: Commands must store undo state correctly.
 
 **Performance Characteristics:**
+
 - Execute: O(1) per command
 - Undo: O(1) per command
 - History storage: O(n) where n is command count
 - Memory per command: varies (depends on state stored)
 
 **When to Use:**
+
 - Need undo/redo functionality
 - Want to queue/schedule operations
 - Logging operations for audit/replay
@@ -14645,6 +14684,7 @@ customElements.define('undoable-input', UndoableInput);
 - Build macro commands from primitives
 
 **When NOT to Use:**
+
 - Simple method calls suffice
 - No undo/history needed
 - Memory constrained (large command history)
@@ -14702,11 +14742,13 @@ customElements.define('undoable-input', UndoableInput);
 The **Iterator Pattern** provides a way to access elements of a collection sequentially without exposing its underlying representation. It decouples collection traversal from the collection itself, enabling different traversal algorithms and supporting multiple simultaneous iterations. In JavaScript, the pattern is formalized through the **Iteration Protocols** (`Symbol.iterator`, `next()`, `IterableIterator`), making it a first-class language feature used by `for...of`, spread operator, destructuring, and more.
 
 **Core Idea:** 
+
 - **Iterator**: Object with `next()` method returning `{ value, done }`.
 - **Iterable**: Object with `[Symbol.iterator]()` method returning an iterator.
 - **Generator**: Function* that yields values; automatically implements iterator protocol.
 
 **Key Benefits:**
+
 1. **Uniform Interface**: All collections (Array, Map, Set, custom) use same iteration protocol.
 2. **Lazy Evaluation**: Generate values on-demand; great for large/infinite sequences.
 3. **Stateful Traversal**: Each iterator maintains its own position.
@@ -14744,12 +14786,14 @@ function processLinkedList(list) {
 5. **Multiple Traversals**: Can't have multiple independent iterations over same collection.
 
 **Without Iterator:** 
+
 - Collection exposes internals (indices, nodes).
 - Client code tightly coupled to collection type.
 - Can't support multiple simultaneous iterations.
 - Eager evaluation wastes memory/CPU.
 
 **With Iterator:** 
+
 - Collection hides internals; exposes iterator.
 - Client code uses uniform `for...of` or `next()`.
 - Each iterator maintains independent state.
@@ -15323,6 +15367,7 @@ for await (const img of visibleElements(images)) {
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - **Uniform Interface**: All collections use same iteration protocol (`for...of`).
 - **Lazy Evaluation**: Generate values on-demand; memory efficient.
 - **Stateful**: Each iterator maintains independent position.
@@ -15331,18 +15376,21 @@ for await (const img of visibleElements(images)) {
 - **Native Support**: First-class language feature (no library needed).
 
 **Disadvantages:**
+
 - **One Direction**: Standard iterators are forward-only (no bidirectional by default).
 - **State Management**: Iterators are stateful; can't reuse without recreating.
 - **No Random Access**: Can't jump to arbitrary position (no `iterator[5]`).
 - **Debugging**: Generator stack traces can be confusing.
 
 **Performance Characteristics:**
+
 - **next() call**: O(1) (depends on underlying collection)
 - **Memory**: O(1) for iterator state (not O(n) for entire collection)
 - **Lazy map/filter**: O(1) per element (no intermediate arrays)
 - **Eager operations** (reduce, toArray): O(n)
 
 **When to Use:**
+
 - Sequential access to collection
 - Large datasets (lazy evaluation)
 - Multiple simultaneous iterations
@@ -15351,6 +15399,7 @@ for await (const img of visibleElements(images)) {
 - Composable data pipelines
 
 **When NOT to Use:**
+
 - Need random access (use array indexing)
 - Need bidirectional traversal (use custom iterator with prev())
 - Simple array operations (forEach is fine)
@@ -15407,11 +15456,13 @@ for await (const img of visibleElements(images)) {
 The **Mediator Pattern** defines an object that encapsulates how a set of objects interact, promoting loose coupling by keeping objects from referring to each other explicitly. Instead of components communicating directly (creating a mesh of dependencies), they communicate through a central mediator. This reduces the dependencies between communicating objects, making the system easier to maintain and extend.
 
 **Core Idea:** 
+
 - **Mediator**: Central hub that coordinates communication between colleagues.
 - **Colleagues**: Components that communicate via mediator (not directly).
 - **Decoupling**: Colleagues don't know about each other; only know the mediator.
 
 **Key Benefits:**
+
 1. **Reduced Coupling**: Components are independent of each other.
 2. **Centralized Control**: All interaction logic in one place (mediator).
 3. **Simplified Communication**: Many-to-many becomes many-to-one-to-many.
@@ -15467,12 +15518,14 @@ charlie.addContact(bob);
 5. **Difficult Testing**: Can't test components independently (need all others).
 
 **Without Mediator:** 
+
 - Components directly reference each other (N² connections).
 - Adding new component requires updating all existing components.
 - Interaction logic duplicated across components.
 - Hard to understand, maintain, test.
 
 **With Mediator:** 
+
 - Components reference only mediator (N connections).
 - Adding new component: register with mediator.
 - Interaction logic centralized in mediator.
@@ -16163,6 +16216,7 @@ class Checkout {
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - **Reduced Coupling**: Components independent; don't reference each other.
 - **Simplified Communication**: Many-to-many becomes many-to-one-to-many.
 - **Centralized Logic**: All interaction logic in mediator (easy to understand).
@@ -16171,18 +16225,21 @@ class Checkout {
 - **Reusability**: Components more reusable (no hard dependencies).
 
 **Disadvantages:**
+
 - **God Object**: Mediator can become complex "god object" handling everything.
 - **Single Point of Failure**: If mediator fails, entire system fails.
 - **Performance**: Central hub can become bottleneck.
 - **Indirection**: Extra layer of indirection (harder to trace calls).
 
 **Performance Characteristics:**
+
 - **Communication**: O(1) to send message; O(n) if broadcasting to n colleagues
 - **Registration**: O(1) to register colleague
 - **Memory**: O(n) to store n colleague references
 - **Event bus**: O(m) where m is number of subscribers per event
 
 **When to Use:**
+
 - Many-to-many communication between components
 - Complex interaction logic
 - Need to add/remove components dynamically
@@ -16191,6 +16248,7 @@ class Checkout {
 - Testing components in isolation
 
 **When NOT to Use:**
+
 - Simple one-to-one communication (direct calls fine)
 - Performance critical (mediator adds overhead)
 - Mediator would become too complex
@@ -16248,11 +16306,13 @@ class Checkout {
 The **Memento Pattern** provides the ability to restore an object to its previous state (undo functionality) without violating encapsulation. It captures and externalizes an object's internal state so that the object can be returned to this state later, all without exposing implementation details. The pattern is essential for implementing undo/redo, snapshots, checkpoints, and transactional systems.
 
 **Core Idea:** 
+
 - **Memento**: Snapshot of object's state (opaque to everyone except originator).
 - **Originator**: Object whose state needs to be saved/restored.
 - **Caretaker**: Manages mementos but never examines their contents.
 
 **Key Benefits:**
+
 1. **Encapsulation**: Object's internal state remains private.
 2. **Undo/Redo**: Easily implement multi-level undo/redo.
 3. **Checkpoint**: Save state at any point, restore later.
@@ -16302,12 +16362,14 @@ const state = editor.getState();
 4. **Large State Overhead**: Saving entire object when only partial state changed wastes memory.
 
 **Without Memento:** 
+
 - Expose internal state (violate encapsulation).
 - Manually manage state snapshots.
 - No standardized undo/redo mechanism.
 - Tight coupling between state management and business logic.
 
 **With Memento:** 
+
 - Encapsulated state snapshots (memento).
 - Originator controls state capture/restore.
 - Caretaker manages history without knowing state details.
@@ -17080,24 +17142,28 @@ router.navigate('/page1', { id: 123 });
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - **Encapsulation**: Internal state remains private.
 - **Undo/Redo**: Easy to implement multi-level undo/redo.
 - **State Isolation**: Memento is immutable; can't be corrupted.
 - **Simplicity**: Clean separation of concerns (originator vs. caretaker).
 
 **Disadvantages:**
+
 - **Memory Overhead**: Storing full snapshots consumes memory.
 - **Performance**: Creating mementos frequently impacts performance.
 - **Large State**: Serializing large objects is expensive.
 - **History Limit**: Need to limit history size to avoid memory issues.
 
 **Performance Characteristics:**
+
 - **Save**: O(n) where n is state size (deep clone)
 - **Restore**: O(n) for state reconstruction
 - **Memory**: O(h × s) where h is history size, s is state size
 - **Optimization**: Use differential snapshots (store only changes)
 
 **Memory Optimization Strategies:**
+
 1. **Differential Snapshots**: Store only changes from previous state.
 2. **Compression**: Compress snapshots (gzip, LZ4).
 3. **Sparse Storage**: Store only changed properties.
@@ -17105,6 +17171,7 @@ router.navigate('/page1', { id: 123 });
 5. **Lazy Serialization**: Serialize only when needed.
 
 **When to Use:**
+
 - Need undo/redo functionality
 - Want to save/restore object state
 - Preserve encapsulation (don't expose internals)
@@ -17113,6 +17180,7 @@ router.navigate('/page1', { id: 123 });
 - Version history/audit trail
 
 **When NOT to Use:**
+
 - State is trivial (simple undo stack suffices)
 - Memory constrained (large state × many snapshots)
 - Performance critical (memento creation expensive)
@@ -17167,11 +17235,13 @@ router.navigate('/page1', { id: 123 });
 The **Observer Pattern** defines a one-to-many dependency between objects so that when one object (Subject) changes state, all its dependents (Observers) are notified and updated automatically. It's fundamental to event-driven programming and reactive systems. The pattern decouples the subject from observers—the subject doesn't need to know concrete observer types, only that they implement an update interface.
 
 **Core Idea:** 
+
 - **Subject** (Observable): Maintains list of observers; notifies them of state changes.
 - **Observer**: Defines update interface; gets notified when subject changes.
 - **Loose Coupling**: Subject and observers are independent; can add/remove observers dynamically.
 
 **Key Benefits:**
+
 1. **Decoupling**: Subject doesn't depend on concrete observer types.
 2. **Dynamic Subscriptions**: Add/remove observers at runtime.
 3. **Broadcast Communication**: One state change notifies many observers.
@@ -17212,12 +17282,14 @@ class DataModel {
 4. **Inflexibility**: Can't add/remove dependents without modifying subject.
 
 **Without Observer:** 
+
 - Subject directly calls methods on dependents.
 - Subject must know all dependent types.
 - Can't add/remove dependents dynamically.
 - Tight coupling makes testing difficult.
 
 **With Observer:** 
+
 - Subject notifies abstract observers.
 - Subject doesn't know concrete observer types.
 - Observers can be added/removed at runtime.
@@ -17887,6 +17959,7 @@ self.clients.matchAll().then(clients => {
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - **Loose Coupling**: Subject doesn't depend on concrete observer types.
 - **Dynamic Subscriptions**: Add/remove observers at runtime.
 - **Broadcast**: One change notifies many observers efficiently.
@@ -17894,6 +17967,7 @@ self.clients.matchAll().then(clients => {
 - **Extensibility**: Add new observers without modifying subject.
 
 **Disadvantages:**
+
 - **Update Order**: Observers notified in unpredictable order (can cause issues).
 - **Memory Leaks**: Forgetting to unsubscribe leaves dangling references.
 - **Cascading Updates**: Observer update can trigger more notifications (infinite loops).
@@ -17901,6 +17975,7 @@ self.clients.matchAll().then(clients => {
 - **Performance**: Many observers slow down notifications.
 
 **Performance Characteristics:**
+
 - **Notify**: O(n) where n is number of observers
 - **Attach/Detach**: O(1) with Set/Map; O(n) with Array
 - **Memory**: O(n) for observer list
@@ -17952,6 +18027,7 @@ class AutoCleanupSubject {
 ```
 
 **When to Use:**
+
 - One-to-many dependencies
 - State changes must propagate
 - Dynamic subscriptions needed
@@ -17960,6 +18036,7 @@ class AutoCleanupSubject {
 - Real-time updates
 
 **When NOT to Use:**
+
 - Simple one-to-one relationships (direct call)
 - Update order matters (use Chain of Responsibility)
 - Performance critical with many observers
@@ -18017,12 +18094,14 @@ class AutoCleanupSubject {
 The **Publish/Subscribe Pattern** (Pub/Sub) is a messaging pattern where publishers send messages to topics/channels without knowledge of subscribers, and subscribers receive messages from topics they're interested in without knowing about publishers. Unlike the Observer pattern where subjects directly notify observers, Pub/Sub introduces an **event bus** (message broker) that decouples publishers and subscribers completely. This enables truly independent, scalable, and flexible communication.
 
 **Core Idea:** 
+
 - **Publisher**: Sends messages to topics (doesn't know about subscribers).
 - **Subscriber**: Listens to topics (doesn't know about publishers).
 - **Event Bus** (Broker): Routes messages from publishers to subscribers.
 - **Topics/Channels**: Named message categories subscribers can listen to.
 
 **Key Benefits:**
+
 1. **Complete Decoupling**: Publishers and subscribers don't know each other.
 2. **Many-to-Many**: Multiple publishers, multiple subscribers per topic.
 3. **Scalability**: Add publishers/subscribers without affecting others.
@@ -18055,12 +18134,14 @@ class Subject {
 4. **Scalability**: Adding publishers/subscribers requires modifying existing code.
 
 **Without Pub/Sub:** 
+
 - Publishers directly coupled to subscribers.
 - No message filtering by topic.
 - Hard to scale (add new publishers/subscribers).
 - Can't intercept/transform messages easily.
 
 **With Pub/Sub:** 
+
 - Publishers publish to topics (no knowledge of subscribers).
 - Subscribers subscribe to topics (no knowledge of publishers).
 - Event bus routes messages (decouples all parties).
@@ -18685,6 +18766,7 @@ db.ref('messages').on('child_changed', (snapshot) => {
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - **Complete Decoupling**: Publishers and subscribers don't know each other.
 - **Scalability**: Easy to add publishers/subscribers without affecting others.
 - **Flexibility**: Dynamic topic subscriptions; wildcard topics.
@@ -18693,6 +18775,7 @@ db.ref('messages').on('child_changed', (snapshot) => {
 - **Cross-platform**: Works across processes, tabs, microservices.
 
 **Disadvantages:**
+
 - **Indirection**: Extra layer (event bus) adds complexity.
 - **Debugging**: Hard to trace message flow (publisher → bus → subscriber).
 - **Message Loss**: If event bus fails, messages lost (need persistence).
@@ -18701,6 +18784,7 @@ db.ref('messages').on('child_changed', (snapshot) => {
 - **Performance**: Central bus can become bottleneck.
 
 **Performance Characteristics:**
+
 - **Publish**: O(n) where n is subscribers for topic
 - **Subscribe**: O(1) to add subscription
 - **Memory**: O(t × s) where t is topics, s is avg subscribers per topic
@@ -18719,6 +18803,7 @@ db.ref('messages').on('child_changed', (snapshot) => {
 | **Use Case** | Single app, tight coupling OK | Distributed systems, microservices |
 
 **When to Use:**
+
 - Need complete decoupling
 - Topic-based message routing
 - Many-to-many communication
@@ -18727,6 +18812,7 @@ db.ref('messages').on('child_changed', (snapshot) => {
 - Dynamic subscriptions
 
 **When NOT to Use:**
+
 - Simple one-to-one communication (direct call)
 - Observer pattern sufficient (same process, tight coupling OK)
 - Performance critical (event bus overhead)
@@ -18784,11 +18870,13 @@ db.ref('messages').on('child_changed', (snapshot) => {
 The **State Pattern** allows an object to alter its behavior when its internal state changes. The object will appear to change its class. Instead of using conditional statements (if/switch) to handle different behaviors based on state, the pattern encapsulates state-specific behavior in separate state objects. The context object delegates state-dependent operations to the current state object, which can change dynamically.
 
 **Core Idea:** 
+
 - **Context**: Maintains reference to current state object; delegates state-dependent behavior.
 - **State**: Interface defining state-specific behavior.
 - **ConcreteStates**: Implement behavior for specific states; handle state transitions.
 
 **Key Benefits:**
+
 1. **Eliminates Conditionals**: Replace complex if/switch statements with state objects.
 2. **State Encapsulation**: Each state's logic is self-contained.
 3. **Easy to Extend**: Add new states without modifying existing code.
@@ -18840,12 +18928,14 @@ class Document {
 4. **Unclear Transitions**: State changes buried in conditional logic.
 
 **Without State Pattern:** 
+
 - Conditional statements in every state-dependent method.
 - State logic scattered; hard to understand state machine.
 - Adding new state requires modifying many methods.
 - State transitions implicit and hard to track.
 
 **With State Pattern:** 
+
 - Each state is a separate object with its own behavior.
 - State logic encapsulated in state classes.
 - Adding new state: create new state class.
@@ -19645,6 +19735,7 @@ class MinimizedState extends ModalState {
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - **Eliminates Conditionals**: Replace if/switch with state objects.
 - **Encapsulation**: Each state's logic is self-contained.
 - **Easy to Extend**: Add new states without modifying existing code.
@@ -19653,18 +19744,21 @@ class MinimizedState extends ModalState {
 - **Maintainability**: State logic organized and easy to understand.
 
 **Disadvantages:**
+
 - **More Classes**: Each state needs a class (can be verbose).
 - **Complexity**: More objects and indirection than simple conditionals.
 - **Overkill**: For simple state machines (2-3 states), conditionals simpler.
 - **State Explosion**: Complex systems can have many states.
 
 **Performance Characteristics:**
+
 - **State Transition**: O(1) (just change reference)
 - **Method Call**: O(1) (delegate to state object)
 - **Memory**: O(n) where n is number of state classes
 - **Overhead**: Minimal (one extra method call per operation)
 
 **When to Use:**
+
 - Many states (3+)
 - Complex state-dependent behavior
 - State transitions are common
@@ -19673,6 +19767,7 @@ class MinimizedState extends ModalState {
 - Need clear state machine visualization
 
 **When NOT to Use:**
+
 - Simple state machines (2-3 states)
 - State logic is trivial
 - States rarely change
@@ -19730,11 +19825,13 @@ class MinimizedState extends ModalState {
 The **Strategy Pattern** defines a family of algorithms, encapsulates each one, and makes them interchangeable. Strategy lets the algorithm vary independently from clients that use it. Instead of implementing a single algorithm directly or using conditionals to select algorithms, the pattern delegates the algorithm choice to separate strategy objects. This enables runtime selection and easy addition of new algorithms without modifying existing code.
 
 **Core Idea:** 
+
 - **Strategy**: Interface defining algorithm contract.
 - **ConcreteStrategy**: Implements specific algorithm.
 - **Context**: Uses strategy interface; can switch strategies at runtime.
 
 **Key Benefits:**
+
 1. **Algorithm Independence**: Algorithms are interchangeable.
 2. **Eliminates Conditionals**: Replace if/switch for algorithm selection.
 3. **Easy to Extend**: Add new algorithms without modifying context.
@@ -19780,12 +19877,14 @@ class DataProcessor {
 4. **Not Reusable**: Algorithms tied to specific context.
 
 **Without Strategy:** 
+
 - Algorithms embedded in context class.
 - Conditionals to select algorithm.
 - Hard to add new algorithms.
 - Algorithms not reusable.
 
 **With Strategy:** 
+
 - Algorithms in separate strategy classes.
 - Context delegates to strategy.
 - Add new algorithms: create new strategy class.
@@ -20492,6 +20591,7 @@ await store.save('largeData', hugeObject);
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - **Eliminates Conditionals**: Replace if/switch with strategy objects.
 - **Open/Closed Principle**: Add strategies without modifying context.
 - **Algorithm Independence**: Strategies are interchangeable.
@@ -20500,12 +20600,14 @@ await store.save('largeData', hugeObject);
 - **Reusability**: Strategies reusable across contexts.
 
 **Disadvantages:**
+
 - **More Classes**: Each algorithm needs a class.
 - **Client Awareness**: Client must know available strategies.
 - **Overhead**: Extra objects and indirection.
 - **Communication**: Context/strategy may need to share data.
 
 **Performance Characteristics:**
+
 - **Strategy Switch**: O(1) (just change reference)
 - **Execute**: O(f(n)) where f is algorithm complexity
 - **Memory**: O(k) where k is number of strategies (small)
@@ -20523,6 +20625,7 @@ await store.save('largeData', hugeObject);
 | **Use Case** | Multiple algorithms for task | Object behavior varies with state |
 
 **When to Use:**
+
 - Multiple algorithms for same task
 - Need to switch algorithms at runtime
 - Complex conditionals for algorithm selection
@@ -20531,6 +20634,7 @@ await store.save('largeData', hugeObject);
 - Client should choose algorithm
 
 **When NOT to Use:**
+
 - Only one algorithm exists
 - Algorithm rarely/never changes
 - Conditionals are simple and clear
@@ -20588,11 +20692,13 @@ await store.save('largeData', hugeObject);
 The **Template Method Pattern** defines the skeleton of an algorithm in a base class but lets subclasses override specific steps of the algorithm without changing its structure. The template method itself is final (non-overridable) and calls a series of abstract or hook methods that subclasses can implement. This pattern inverts control—the parent class calls child methods (Hollywood Principle: "Don't call us, we'll call you").
 
 **Core Idea:** 
+
 - **Template Method**: Fixed algorithm structure in base class.
 - **Abstract/Hook Methods**: Steps that subclasses can customize.
 - **Concrete Classes**: Override specific steps; inherit algorithm structure.
 
 **Key Benefits:**
+
 1. **Code Reuse**: Common algorithm structure in one place.
 2. **Controlled Extension**: Subclasses override only specific steps.
 3. **Inversion of Control**: Parent controls flow; child provides implementations.
@@ -20636,12 +20742,14 @@ class HTMLReport {
 4. **Hard to Maintain**: Changing algorithm structure requires updating all classes.
 
 **Without Template Method:** 
+
 - Algorithm structure duplicated across classes.
 - No guarantee subclasses follow correct steps.
 - Common code not shared.
 - Hard to maintain consistency.
 
 **With Template Method:** 
+
 - Algorithm structure in base class (template method).
 - Subclasses override only varying steps.
 - Common code shared in base class.
@@ -21444,6 +21552,7 @@ new UserAuthTest().run();
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - **Code Reuse**: Common algorithm structure in one place.
 - **Consistency**: All subclasses follow same structure.
 - **Inversion of Control**: Parent controls flow; clean architecture.
@@ -21451,12 +21560,14 @@ new UserAuthTest().run();
 - **Guaranteed Behavior**: Template method ensures all steps executed.
 
 **Disadvantages:**
+
 - **Inheritance Required**: Must use inheritance (not composition).
 - **Rigid Structure**: Can't easily change algorithm structure.
 - **Liskov Substitution**: Subclasses must be substitutable.
 - **Debugging**: Following execution flow across base/derived classes harder.
 
 **Performance Characteristics:**
+
 - **Execution**: O(f(n)) where f is algorithm complexity (no overhead)
 - **Inheritance Overhead**: Negligible (virtual method dispatch is fast)
 - **Memory**: No extra memory (just vtable pointer)
@@ -21472,6 +21583,7 @@ new UserAuthTest().run();
 | **When to Use** | Common structure, varying steps | Algorithms completely different |
 
 **When to Use:**
+
 - Common algorithm structure across variants
 - Steps vary but order is fixed
 - Want to guarantee algorithm structure
@@ -21480,6 +21592,7 @@ new UserAuthTest().run();
 - Using inheritance is acceptable
 
 **When NOT to Use:**
+
 - Need flexible algorithm structure (use Strategy)
 - Favor composition over inheritance
 - Algorithm steps unrelated
@@ -21534,6 +21647,7 @@ new UserAuthTest().run();
 The **Visitor Pattern** represents an operation to be performed on elements of an object structure. It lets you define a new operation without changing the classes of the elements on which it operates. The pattern separates algorithms from the objects on which they operate by using **double dispatch**: the element accepts a visitor, and the visitor visits the element with type-specific methods. This enables adding new operations easily (open for extension) while keeping element classes stable (closed for modification).
 
 **Core Idea:** 
+
 - **Visitor**: Interface defining visit methods for each element type.
 - **ConcreteVisitor**: Implements operations for each element type.
 - **Element**: Interface with accept(visitor) method.
@@ -21541,6 +21655,7 @@ The **Visitor Pattern** represents an operation to be performed on elements of a
 - **Double Dispatch**: Element calls visitor.visit(this); visitor calls element-specific method.
 
 **Key Benefits:**
+
 1. **Easy to Add Operations**: New visitors = new operations; no element changes.
 2. **Separate Concerns**: Operations separated from data structure.
 3. **Type-Safe**: Compile-time type checking for each element type.
@@ -21578,12 +21693,14 @@ class Rectangle {
 4. **Violates Single Responsibility**: Element classes handle both data and operations.
 
 **Without Visitor:** 
+
 - Operations embedded in element classes.
 - Adding operation = modifying all elements.
 - Related logic scattered.
 - Violates Open/Closed Principle.
 
 **With Visitor:** 
+
 - Operations in visitor classes.
 - Adding operation = new visitor (no element changes).
 - Related logic centralized in visitor.
@@ -22194,6 +22311,7 @@ console.log('Errors:', validator.getErrors());
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - **Easy to Add Operations**: New visitor = new operation; no element changes.
 - **Separate Concerns**: Operations separated from data structure.
 - **Type-Safe**: Compile-time type checking for each element type.
@@ -22201,18 +22319,21 @@ console.log('Errors:', validator.getErrors());
 - **Single Responsibility**: Each visitor handles one concern.
 
 **Disadvantages:**
+
 - **Hard to Add Element Types**: New element type requires updating ALL visitors.
 - **Breaks Encapsulation**: Visitor needs access to element internals.
 - **Double Dispatch Overhead**: Extra method call per visit.
 - **Circular Dependencies**: Element and visitor reference each other.
 
 **Performance Characteristics:**
+
 - **Visit Operation**: O(1) per element (just method dispatch)
 - **Traversal**: O(n) where n is number of elements
 - **Memory**: O(1) per visitor instance (plus accumulated state)
 - **Overhead**: One extra method call per element (negligible)
 
 **When to Use:**
+
 - Element types stable; operations change frequently
 - Many operations on object structure
 - Need type-safe operations
@@ -22221,6 +22342,7 @@ console.log('Errors:', validator.getErrors());
 - Multiple unrelated operations needed
 
 **When NOT to Use:**
+
 - Element types change frequently (every change affects all visitors)
 - Only one or two operations needed (just add methods to elements)
 - Operations tightly coupled to elements
@@ -22276,6 +22398,7 @@ console.log('Errors:', validator.getErrors());
 The **Interpreter Pattern** defines a representation for a grammar of a language and provides an interpreter to process sentences in that language. It represents each grammar rule as a class and uses composition to build an Abstract Syntax Tree (AST). The interpreter then evaluates or executes the AST. This pattern is used for implementing domain-specific languages (DSLs), expression evaluators, query languages, and configuration parsers.
 
 **Core Idea:** 
+
 - **Grammar**: Define language rules (BNF notation).
 - **Expression**: Interface representing grammar rule.
 - **TerminalExpression**: Leaf nodes (literals, variables).
@@ -22284,6 +22407,7 @@ The **Interpreter Pattern** defines a representation for a grammar of a language
 - **Interpreter**: Evaluates AST recursively.
 
 **Key Benefits:**
+
 1. **Extensible**: Easy to add new grammar rules (new expression classes).
 2. **Grammar as Code**: Grammar represented directly in class structure.
 3. **Recursive Evaluation**: Natural for recursive grammar.
@@ -22319,12 +22443,14 @@ evaluate('2 + 3 * 4', {}); // Wrong precedence!
 4. **No Validation**: Syntax errors caught at runtime, not during parse.
 
 **Without Interpreter:** 
+
 - Manual parsing with string manipulation.
 - No formal grammar representation.
 - Hard to extend and maintain.
 - Poor error handling.
 
 **With Interpreter:** 
+
 - Grammar represented as classes (AST nodes).
 - Parser builds AST from input.
 - Interpreter evaluates AST recursively.
@@ -23021,6 +23147,7 @@ console.log('Feet:', distance.toFeet());
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - **Grammar as Code**: Grammar directly represented in class structure.
 - **Easy to Extend**: Add new grammar rule = add new expression class.
 - **Type-Safe**: Compile-time checking of expression types.
@@ -23029,6 +23156,7 @@ console.log('Feet:', distance.toFeet());
 - **Visitor Compatible**: Can use Visitor for additional operations.
 
 **Disadvantages:**
+
 - **Many Classes**: Each grammar rule needs a class (verbose).
 - **Performance**: Recursive evaluation slower than compiled code.
 - **Complex Grammar**: Large grammars create class explosion.
@@ -23036,12 +23164,14 @@ console.log('Feet:', distance.toFeet());
 - **Maintenance**: Changing grammar requires updating many classes.
 
 **Performance Characteristics:**
+
 - **Parse**: O(n) where n is input length (building AST)
 - **Evaluate**: O(m) where m is AST nodes (recursive traversal)
 - **Memory**: O(m) for AST nodes
 - **Optimization**: Use Visitor for optimization passes; cache results
 
 **When to Use:**
+
 - Simple grammar (small number of rules)
 - Grammar rarely changes
 - Performance not critical
@@ -23050,6 +23180,7 @@ console.log('Feet:', distance.toFeet());
 - Extensibility important
 
 **When NOT to Use:**
+
 - Complex grammar (use parser generator: ANTLR, PEG.js)
 - Performance critical (use compiled approach)
 - Grammar changes frequently
@@ -23113,12 +23244,14 @@ console.log('Feet:', distance.toFeet());
 The **Model-View-Controller (MVC)** pattern is an architectural pattern that separates an application into three interconnected components: Model (data and business logic), View (UI presentation), and Controller (handles user input and coordinates Model/View). This separation of concerns makes applications easier to maintain, test, and scale. MVC is one of the oldest and most influential architectural patterns, forming the foundation for many modern frameworks (Ruby on Rails, Django, ASP.NET MVC).
 
 **Core Idea:** 
+
 - **Model**: Data, state, business logic; notifies observers of changes.
 - **View**: Presents data to user; observes model for changes.
 - **Controller**: Handles user input; updates model; selects view.
 - **Flow**: User → Controller → Model → View → User
 
 **Key Benefits:**
+
 1. **Separation of Concerns**: UI, logic, and data are independent.
 2. **Parallel Development**: Teams can work on M, V, C simultaneously.
 3. **Reusability**: Models can have multiple views; views can display different models.
@@ -23166,12 +23299,14 @@ class UserApp {
 4. **Not Reusable**: Can't reuse logic/data with different UIs.
 
 **Without MVC:** 
+
 - All code in one class/file.
 - UI, logic, data tightly coupled.
 - Hard to test and maintain.
 - Can't reuse components.
 
 **With MVC:** 
+
 - Model: data + logic (independent).
 - View: UI presentation (observes model).
 - Controller: input handling (updates model).
@@ -23695,6 +23830,7 @@ function CounterApp() {
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - **Separation of Concerns**: Clean boundaries between UI, logic, data.
 - **Parallel Development**: Teams work on M, V, C independently.
 - **Multiple Views**: Different UIs for same data (mobile, web, API).
@@ -23703,17 +23839,20 @@ function CounterApp() {
 - **Maintainability**: Changes localized to one component.
 
 **Disadvantages:**
+
 - **Complexity**: Three layers add complexity for simple apps.
 - **Learning Curve**: Developers must understand pattern and flow.
 - **Overhead**: Extra abstractions and boilerplate.
 - **Tight View-Controller Coupling**: View and Controller often tightly coupled.
 
 **Performance Characteristics:**
+
 - **Negligible Overhead**: Separation adds minimal performance cost.
 - **Observer Pattern**: Model-View communication via events (fast).
 - **Scalability**: Well-suited for large, complex applications.
 
 **When to Use:**
+
 - Medium to large applications
 - Multiple views for same data
 - Team development (parallel work)
@@ -23722,6 +23861,7 @@ function CounterApp() {
 - Clear separation of concerns desired
 
 **When NOT to Use:**
+
 - Very simple applications (overkill)
 - Prototype/throwaway code
 - Single-developer small projects
@@ -23776,12 +23916,14 @@ function CounterApp() {
 The **Model-View-Presenter (MVP)** pattern is an architectural pattern derived from MVC that addresses MVC's tight coupling between View and Controller. In MVP, the Presenter acts as a mediator between Model and View, with the View being completely passive (no business logic). Unlike MVC where View observes Model directly, in MVP all communication flows through the Presenter. This makes the View more testable and the separation cleaner.
 
 **Core Idea:** 
+
 - **Model**: Data and business logic (same as MVC).
 - **View**: Passive UI; delegates all user input to Presenter.
 - **Presenter**: Mediates between Model and View; handles all logic.
 - **Flow**: User → View → Presenter → Model → Presenter → View → User
 
 **Key Benefits:**
+
 1. **Testability**: View is just an interface; easy to mock for testing.
 2. **Passive View**: No business logic in View.
 3. **Clear Separation**: All logic in Presenter.
@@ -23812,11 +23954,13 @@ class MVCView {
 3. **Hard to Test View**: Can't test View without Model in MVC.
 
 **Without MVP:** 
+
 - View directly coupled to Model.
 - View contains presentation logic.
 - Hard to unit test View.
 
 **With MVP:** 
+
 - Presenter mediates all M-V communication.
 - View is completely passive (interface).
 - Easy to test Presenter with mock View.
@@ -24319,12 +24463,14 @@ testPresenter();
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - **Testability**: View is interface; easy to mock; Presenter fully testable without DOM.
 - **Passive View**: NO business logic in View (just interface methods).
 - **Clear Separation**: ALL logic in Presenter.
 - **Loose Coupling**: Model and View completely independent.
 
 **Disadvantages:**
+
 - **Boilerplate**: View interface adds boilerplate.
 - **Presenter Complexity**: Presenter can become large (God Object).
 - **View Updates**: Manual view updates (Presenter must call view methods).
@@ -24342,6 +24488,7 @@ testPresenter();
 | **Use Case** | Simple apps | Testing-critical apps |
 
 **When to Use:**
+
 - Testability is critical
 - View logic must be testable without DOM
 - Need passive View (no logic)
@@ -24350,6 +24497,7 @@ testPresenter();
 - Android development
 
 **When NOT to Use:**
+
 - Simple applications (overkill)
 - Rapid prototyping
 - MVC sufficient for your needs
@@ -24404,12 +24552,14 @@ testPresenter();
 The **Model-View-ViewModel (MVVM)** pattern is an architectural pattern that facilitates separation of the UI (View) from business logic through data binding. Unlike MVC/MVP where updates are manual, MVVM uses **two-way data binding** between View and ViewModel, automatically synchronizing UI and data. The ViewModel exposes data and commands for the View to bind to, eliminating manual DOM manipulation. This pattern is the foundation of modern frameworks like Vue, Angular, Knockout, and WPF.
 
 **Core Idea:** 
+
 - **Model**: Data and business logic (same as MVC/MVP).
 - **View**: UI template with data bindings (declarative).
 - **ViewModel**: Exposes data and commands; binds to View; observes Model.
 - **Two-Way Binding**: View ↔ ViewModel automatically synchronized.
 
 **Key Benefits:**
+
 1. **Automatic Synchronization**: No manual view updates.
 2. **Declarative UI**: View is declarative (bindings, no imperative code).
 3. **Testable**: ViewModel testable without View.
@@ -24436,11 +24586,13 @@ class Presenter {
 3. **Tedious Synchronization**: Keep UI and data in sync manually.
 
 **Without MVVM:** 
+
 - Manual view updates required.
 - Imperative DOM manipulation.
 - Tedious to keep UI/data synchronized.
 
 **With MVVM:** 
+
 - Two-way data binding (automatic sync).
 - Declarative UI (bindings in template).
 - ViewModel handles logic; View handles display.
@@ -25263,6 +25415,7 @@ export class ShoppingCartComponent {
 ## Related Patterns
 
 ### 1. **Observer Pattern** (Foundation)
+
  - MVVM uses Observer internally for reactivity.
  - ViewModel observes Model; View observes ViewModel.
 
@@ -25275,6 +25428,7 @@ export class ShoppingCartComponent {
  ```
 
 ### 3. **MVC/MVP** (Alternative Architectures)
+
  - **MVC**: View updates manually via Controller.
  - **MVP**: Presenter mediates; View is passive.
  - **MVVM**: Two-way binding; View is declarative.
@@ -25326,6 +25480,7 @@ export class ShoppingCartComponent {
 The **Flux Pattern** is a unidirectional data flow architecture developed by Facebook for building predictable state management in client-side applications. Unlike MVC/MVVM with bidirectional data flow, Flux enforces a **one-way data flow**: Actions → Dispatcher → Store → View → Actions. This makes data flow predictable, debuggable, and easier to reason about. Flux is the conceptual foundation for Redux, Vuex, and other modern state management libraries.
 
 **Core Idea:** 
+
 - **One-way data flow**: Data flows in a single direction through the application.
 - **Actions**: Describe what happened (events with payloads).
 - **Dispatcher**: Central hub that dispatches actions to stores.
@@ -25333,6 +25488,7 @@ The **Flux Pattern** is a unidirectional data flow architecture developed by Fac
 - **Views**: React to store changes and dispatch actions.
 
 **Key Benefits:**
+
 1. **Predictable**: Unidirectional flow makes behavior predictable.
 2. **Debuggable**: Easy to trace data flow and state changes.
 3. **Decoupled**: Components don't directly mutate each other.
@@ -25375,11 +25531,13 @@ The **Flux Pattern** is a unidirectional data flow architecture developed by Fac
  ```
 
 **Without Flux:** 
+
 - Bidirectional data flow (unpredictable).
 - Cascading updates (view → model → view → ...).
 - Hard to debug state changes.
 
 **With Flux:** 
+
 - Unidirectional data flow (predictable).
 - Explicit actions describe changes.
 - Single dispatcher coordinates flow.
@@ -26415,23 +26573,28 @@ class AuthStore extends EventTarget {
 ## Related Patterns
 
 ### 1. **Redux** (Evolution of Flux)
+
  - Single store (vs. multiple stores).
  - Pure reducer functions (vs. store methods).
  - Middleware for async (vs. thunks in actions).
 
 ### 2. **Observer Pattern** (Foundation)
+
  - Stores are Subjects; Views are Observers.
  - Store emits change events; Views listen.
 
 ### 3. **Command Pattern** (Actions)
+
  - Actions are commands encapsulating requests.
  - Dispatcher executes commands.
 
 ### 4. **Mediator Pattern** (Dispatcher)
+
  - Dispatcher is mediator between Views and Stores.
  - Centralizes communication.
 
 ### 5. **CQRS** (Separation of Concerns)
+
  - Actions = Commands.
  - Stores = Read models.
  - Dispatcher = Command handler.
@@ -26464,6 +26627,7 @@ class AuthStore extends EventTarget {
 **Redux** is a predictable state container based on Flux, but simplified with three core principles: **single source of truth**, **state is read-only**, and **changes via pure functions**. Redux enforces a strict unidirectional flow: Action → Reducer → Store → View. Unlike Flux's multiple stores, Redux has a **single store** with a single state tree, making state management predictable, testable, and debuggable. Redux is the most popular state management solution for React, but works with any framework.
 
 **Core Idea:** 
+
 - **Single Store**: One store, one state tree.
 - **Actions**: Plain objects describing events.
 - **Reducers**: Pure functions `(state, action) => newState`.
@@ -26471,6 +26635,7 @@ class AuthStore extends EventTarget {
 - **Middleware**: Intercept actions for async logic, logging, etc.
 
 **Three Principles:**
+
 1. **Single Source of Truth**: Entire app state in one store.
 2. **State is Read-Only**: Only way to change state is to dispatch an action.
 3. **Changes with Pure Functions**: Reducers are pure functions.
@@ -26509,11 +26674,13 @@ class AuthStore extends EventTarget {
  ```
 
 **Without Redux:** 
+
 - Multiple stores (Flux) → coordination complexity.
 - Mutable state → hard to debug.
 - No time-travel debugging.
 
 **With Redux:** 
+
 - Single store → single source of truth.
 - Immutable state → predictable changes.
 - Action history → time-travel debugging.
@@ -27507,21 +27674,27 @@ function UndoRedoButtons() {
 ## Related Patterns
 
 ### 1. **Flux** (Predecessor)
+
  - Redux simplifies Flux (single store, no dispatcher).
 
 ### 2. **Command Pattern** (Actions)
+
  - Actions are commands encapsulating state changes.
 
 ### 3. **Observer Pattern** (Subscriptions)
+
  - Store is Subject; components are Observers.
 
 ### 4. **Reducer Pattern** (Functional)
+
  - `Array.reduce()` pattern for state updates.
 
 ### 5. **Immutable Data Structures**
+
  - Redux enforces immutability for predictability.
 
 ### 6. **CQRS** (Read/Write Separation)
+
  - Actions (commands) vs. Selectors (queries).
 
 ## RFC-style Summary
@@ -27552,12 +27725,14 @@ function UndoRedoButtons() {
 **CQRS (Command Query Responsibility Segregation)** is an architectural pattern that separates read operations (Queries) from write operations (Commands) using different models. Instead of using a single model for both reading and writing data, CQRS uses separate **Command Model** (for writes) and **Query Model** (for reads). This separation enables independent optimization, scaling, and complexity management for each side. CQRS is particularly powerful when combined with Event Sourcing and is commonly used in event-driven architectures.
 
 **Core Idea:** 
+
 - **Commands**: Write operations that change state (imperative: "DoSomething").
 - **Queries**: Read operations that return data (no side effects).
 - **Separate Models**: Different models optimized for writes vs. reads.
 - **Event-Driven**: Commands often produce events; queries consume projections.
 
 **Key Benefits:**
+
 1. **Independent Optimization**: Optimize reads and writes separately.
 2. **Scalability**: Scale read and write sides independently.
 3. **Simpler Models**: Each model tailored to its purpose.
@@ -27610,11 +27785,13 @@ function UndoRedoButtons() {
  ```
 
 **Without CQRS:** 
+
 - Single model for both reads/writes (complex).
 - Difficult to optimize for both use cases.
 - Scaling couples reads and writes.
 
 **With CQRS:** 
+
 - Separate models optimized for their purpose.
 - Independent scaling (scale reads more than writes).
 - Simpler, more focused models.
@@ -28617,19 +28794,24 @@ class DocumentReadModel {
 ## Related Patterns
 
 ### 1. **Event Sourcing** (Often Combined)
+
  - CQRS + Event Sourcing = powerful event-driven architecture.
  - Write model stores events; read models are projections.
 
 ### 2. **Command Pattern** (Commands)
+
  - Commands are Command Pattern instances.
 
 ### 3. **Observer Pattern** (Event Bus)
+
  - Event bus notifies read models (observers).
 
 ### 4. **Repository Pattern** (Data Access)
+
  - Write/read stores use repositories.
 
 ### 5. **Saga Pattern** (Long-running Transactions)
+
  - Commands trigger sagas for complex workflows.
 
 ## RFC-style Summary
@@ -28660,12 +28842,14 @@ class DocumentReadModel {
 **Event Sourcing** is an architectural pattern where state changes are stored as a **sequence of events** rather than storing the current state directly. Instead of updating records in-place, Event Sourcing appends immutable events to an event log. The current state is derived by **replaying events** from the beginning. This provides a complete audit trail, enables time-travel debugging, and makes it easy to rebuild state or create new projections. Event Sourcing is often combined with CQRS for powerful event-driven architectures.
 
 **Core Idea:** 
+
 - **Events**: Immutable facts representing state changes (past tense: "UserCreated", "OrderPlaced").
 - **Event Store**: Append-only log of all events.
 - **State Reconstruction**: Current state derived by replaying events.
 - **Projections**: Different read models built from event stream.
 
 **Key Benefits:**
+
 1. **Complete Audit Trail**: Every state change is recorded.
 2. **Time Travel**: Replay events to any point in time.
 3. **Event Replay**: Rebuild state or create new projections.
@@ -28714,11 +28898,13 @@ class DocumentReadModel {
  ```
 
 **Without Event Sourcing:** 
+
 - Store current state only (history lost).
 - No audit trail.
 - Cannot time-travel or rebuild.
 
 **With Event Sourcing:** 
+
 - Store all events (complete history).
 - Full audit trail.
 - Time-travel, replay, multiple projections.
@@ -29842,18 +30028,23 @@ console.log(history);
 ## Related Patterns
 
 ### 1. **CQRS** (Often Combined)
+
  - Event Sourcing provides write side; projections are read side.
 
 ### 2. **Command Pattern** (Commands)
+
  - Commands produce events.
 
 ### 3. **Memento Pattern** (Snapshots)
+
  - Snapshots are mementos of aggregate state.
 
 ### 4. **Observer Pattern** (Event Listeners)
+
  - Projections observe event stream.
 
 ### 5. **Repository Pattern** (Data Access)
+
  - Repository loads/saves aggregates via event store.
 
 ## RFC-style Summary
@@ -29884,12 +30075,14 @@ console.log(history);
 The **Reactor Pattern** is a concurrency pattern for handling service requests delivered concurrently to an application by **demultiplexing** and **dispatching** them to corresponding event handlers. Instead of spawning threads for each request, the Reactor uses a **single-threaded event loop** that monitors multiple I/O sources and dispatches events to registered handlers. This is the foundation of Node.js's event loop, browser event handling, and async I/O libraries. The Reactor enables non-blocking I/O and high concurrency with low overhead.
 
 **Core Idea:** 
+
 - **Event Loop**: Single thread that monitors events.
 - **Demultiplexer**: Waits for events on multiple sources (e.g., `select()`, `epoll()`, browser event queue).
 - **Event Handlers**: Callbacks registered for specific events.
 - **Non-blocking I/O**: Handlers execute quickly; no blocking operations.
 
 **Key Benefits:**
+
 1. **High Concurrency**: Handle many connections with one thread.
 2. **Low Overhead**: No thread-per-connection overhead.
 3. **Simplicity**: Single-threaded (no race conditions).
@@ -29942,11 +30135,13 @@ Demultiplexer (select/epoll/browser queue)
  ```
 
 **Without Reactor:** 
+
 - Thread-per-connection (high overhead).
 - Blocking I/O (wastes CPU).
 - Poor scalability.
 
 **With Reactor:** 
+
 - Single-threaded event loop.
 - Non-blocking I/O.
 - Handle thousands of connections efficiently.
@@ -30900,16 +31095,20 @@ document.querySelector('#file-input').addEventListener('change', (event) => {
 ## Related Patterns
 
 ### 1. **Proactor Pattern** (Alternative)
+
  - Async I/O completion (Windows IOCP).
  - Reactor: Waits for readiness; Proactor: Waits for completion.
 
 ### 2. **Observer Pattern** (Event Handlers)
+
  - Handlers are observers; event loop is subject.
 
 ### 3. **Command Pattern** (Event Handlers)
+
  - Events are commands dispatched by reactor.
 
 ### 4. **Scheduler Pattern** (Task Scheduling)
+
  - Reactor can integrate scheduler for timed events.
 
 ## RFC-style Summary
@@ -30940,12 +31139,14 @@ document.querySelector('#file-input').addEventListener('change', (event) => {
 The **Scheduler Pattern** is a concurrency pattern that manages when and how tasks are executed. Instead of executing tasks immediately, a scheduler **queues tasks** and **controls their execution** based on priorities, timing, resource availability, or custom policies. Schedulers are fundamental to async programming, task queues, animation loops, and cooperative multitasking. In JavaScript, schedulers power `setTimeout`, `requestAnimationFrame`, `Promise` microtasks, and libraries like RxJS.
 
 **Core Idea:** 
+
 - **Task Queue**: Queue of pending tasks.
 - **Scheduling Policy**: When and in what order to execute tasks (FIFO, priority, time-based).
 - **Execution Control**: Execute tasks at appropriate times.
 - **Cooperative**: Tasks yield control back to scheduler.
 
 **Key Benefits:**
+
 1. **Control Execution**: Decide when tasks run.
 2. **Prioritization**: High-priority tasks first.
 3. **Fairness**: Prevent starvation.
@@ -30983,11 +31184,13 @@ The **Scheduler Pattern** is a concurrency pattern that manages when and how tas
  ```
 
 **Without Scheduler:** 
+
 - Tasks execute immediately or randomly.
 - No prioritization or fairness.
 - Resource exhaustion.
 
 **With Scheduler:** 
+
 - Controlled execution (when, order).
 - Prioritization and fairness.
 - Resource management.
@@ -31946,18 +32149,23 @@ document.querySelector('#button').addEventListener('click', () => {
 ## Related Patterns
 
 ### 1. **Reactor Pattern** (Event Loop)
+
  - Scheduler runs on event loop (Reactor).
 
 ### 2. **Command Pattern** (Tasks)
+
  - Scheduled tasks are commands.
 
 ### 3. **Strategy Pattern** (Policies)
+
  - Different scheduling policies (strategies).
 
 ### 4. **Queue Pattern** (Task Queue)
+
  - Scheduler uses queues.
 
 ### 5. **Observer Pattern** (Callbacks)
+
  - Tasks complete → notify observers.
 
 ## RFC-style Summary
@@ -31988,12 +32196,14 @@ document.querySelector('#button').addEventListener('click', () => {
 The **Promise Pattern** is a concurrency pattern for handling asynchronous operations. A **Promise** represents a value that may not be available yet but will be resolved (success) or rejected (failure) in the future. Promises provide a cleaner alternative to callbacks, enabling **chaining**, **error handling**, and **composition** of async operations. Promises are built into JavaScript (ES6+) and are fundamental to modern async programming with `async/await`.
 
 **Core Idea:** 
+
 - **Promise**: Object representing eventual completion/failure of async operation.
 - **States**: Pending → Fulfilled (success) or Rejected (failure).
 - **Immutable**: Once settled, state cannot change.
 - **Chainable**: `.then()`, `.catch()`, `.finally()` for composition.
 
 **Key Benefits:**
+
 1. **Avoid Callback Hell**: Chain operations instead of nesting.
 2. **Error Handling**: Centralized with `.catch()`.
 3. **Composition**: Combine multiple promises (`Promise.all`, `Promise.race`).
@@ -32045,11 +32255,13 @@ The **Promise Pattern** is a concurrency pattern for handling asynchronous opera
  ```
 
 **Without Promises:** 
+
 - Callback hell (nested callbacks).
 - Scattered error handling.
 - Difficult composition.
 
 **With Promises:** 
+
 - Flat chaining (`.then()`).
 - Centralized error handling (`.catch()`).
 - Easy composition (`Promise.all`, `Promise.race`).
@@ -32812,18 +33024,23 @@ document.querySelector('#search-input').addEventListener('input', async (event) 
 ## Related Patterns
 
 ### 1. **Observer Pattern** (Callbacks)
+
  - Promise notifies observers (`.then()` callbacks).
 
 ### 2. **Future/Deferred** (Similar Concept)
+
  - Promise is JavaScript's implementation of Future pattern.
 
 ### 3. **Monad Pattern** (Functional)
+
  - Promise is a monad (chainable, composable).
 
 ### 4. **Reactor Pattern** (Event Loop)
+
  - Promises execute on event loop (microtask queue).
 
 ### 5. **Command Pattern** (Async Commands)
+
  - Promises encapsulate async commands.
 
 ## RFC-style Summary
@@ -32854,12 +33071,14 @@ document.querySelector('#search-input').addEventListener('input', async (event) 
 The **Observer (Reactive Streams) Pattern** extends the classic Observer pattern to handle **asynchronous data streams** over time. Unlike promises (single value) or traditional observers (synchronous), reactive streams emit **multiple values asynchronously** and support **backpressure**, **error handling**, and **completion**. This pattern is the foundation of **RxJS**, **reactive programming**, and modern stream-based architectures. Reactive streams treat events, data, and async operations as **observable streams** that can be transformed, filtered, combined, and consumed.
 
 **Core Idea:** 
+
 - **Observable**: Stream of values over time (hot or cold).
 - **Observer**: Subscribes to observable; receives next/error/complete notifications.
 - **Operators**: Transform streams (map, filter, merge, etc.).
 - **Backpressure**: Handle producer faster than consumer.
 
 **Key Benefits:**
+
 1. **Unified Async Model**: Events, promises, timers → streams.
 2. **Composable**: Chain operators to transform streams.
 3. **Declarative**: Describe what, not how.
@@ -32906,11 +33125,13 @@ The **Observer (Reactive Streams) Pattern** extends the classic Observer pattern
  ```
 
 **Without Reactive Streams:** 
+
 - Manual event handling (callbacks).
 - Hard to compose async streams.
 - No built-in backpressure.
 
 **With Reactive Streams:** 
+
 - Declarative stream manipulation.
 - Powerful operators for composition.
 - Backpressure support.
@@ -33715,20 +33936,25 @@ let currentPage = 1;
 ## Related Patterns
 
 ### 1. **Observer Pattern** (Classic)
+
  - Reactive streams extend Observer for async, over time.
 
 ### 2. **Iterator Pattern** (Pull vs Push)
+
  - Iterator: Pull-based (consumer pulls values).
  - Observable: Push-based (producer pushes values).
 
 ### 3. **Promise Pattern** (Single vs Multiple)
+
  - Promise: Single value.
  - Observable: Multiple values over time.
 
 ### 4. **Reactor Pattern** (Event Loop)
+
  - Observables run on event loop.
 
 ### 5. **Stream Pattern** (Data Streams)
+
  - Observables are a type of stream (push-based).
 
 ## RFC-style Summary
@@ -33760,6 +33986,7 @@ let currentPage = 1;
 The **Actor Model** is a concurrency pattern where **actors** are independent, isolated units that communicate exclusively via **asynchronous message passing**. Each actor has its own **private state** (no shared memory), a **mailbox** for incoming messages, and processes messages **sequentially** (one at a time). This eliminates race conditions and makes concurrent programming safer and easier to reason about. The Actor Model is used in Erlang, Akka, and increasingly in JavaScript for managing complex async workflows.
 
 **Core Idea:** 
+
 - **Actors**: Independent units with private state.
 - **Messages**: Async communication (no direct calls).
 - **Mailbox**: Queue of messages for each actor.
@@ -33767,6 +33994,7 @@ The **Actor Model** is a concurrency pattern where **actors** are independent, i
 - **Sequential Processing**: One message at a time per actor.
 
 **Key Benefits:**
+
 1. **No Race Conditions**: No shared state → no locks.
 2. **Fault Isolation**: Actor failures don't crash others.
 3. **Scalability**: Actors run independently (parallel).
@@ -33819,11 +34047,13 @@ The **Actor Model** is a concurrency pattern where **actors** are independent, i
  ```
 
 **Without Actor Model:** 
+
 - Shared state (race conditions).
 - Complex locking (deadlocks).
 - Fault propagation.
 
 **With Actor Model:** 
+
 - No shared state (isolated actors).
 - No locks (message passing).
 - Fault isolation (actors crash independently).
@@ -34731,18 +34961,23 @@ function processTask(task) {
 ## Related Patterns
 
 ### 1. **Observer Pattern** (Message Subscriptions)
+
  - Actors can observe/subscribe to other actors.
 
 ### 2. **Command Pattern** (Messages)
+
  - Messages are commands sent to actors.
 
 ### 3. **Reactor Pattern** (Event Loop)
+
  - Actors process mailbox on event loop.
 
 ### 4. **State Machine** (Actor Behavior)
+
  - Actor behavior often modeled as state machine.
 
 ### 5. **Supervisor Pattern** (Fault Tolerance)
+
  - Supervise child actors; restart on failure.
 
 ## RFC-style Summary
@@ -34773,12 +35008,14 @@ function processTask(task) {
 The **Async Iterator Pattern** extends the classic Iterator pattern to handle **asynchronous data sources**. It enables **sequential** iteration over values that arrive **asynchronously** (e.g., from network, streams, timers). Unlike promises (single async value) or observables (push-based), async iterators are **pull-based**: the consumer requests the next value when ready. JavaScript's `for await...of` syntax makes async iteration ergonomic and intuitive.
 
 **Core Idea:** 
+
 - **Async Iterator**: Object with `next()` method returning `Promise<{value, done}>`.
 - **Async Iterable**: Object with `[Symbol.asyncIterator]()` method.
 - **Pull-Based**: Consumer pulls values (vs. observables pushing).
 - **Sequential**: One value at a time.
 
 **Key Benefits:**
+
 1. **Backpressure**: Consumer controls pace (pull-based).
 2. **Sequential Async**: Iterate async data like sync data.
 3. **for await...of**: Elegant syntax.
@@ -34826,11 +35063,13 @@ interface AsyncIterable {
  ```
 
 **Without Async Iterator:** 
+
 - Manual async iteration (repetitive).
 - No backpressure (push-based).
 - Complex stream APIs.
 
 **With Async Iterator:** 
+
 - `for await...of` (simple).
 - Pull-based backpressure.
 - Standard, simple API.
@@ -35149,12 +35388,14 @@ async function* watchFile(filePath) {
 The **Pipeline Pattern** is a concurrency pattern for processing data through a series of **stages**, where each stage performs a specific transformation and passes the result to the next stage. Pipelines enable **modular**, **composable** data processing with **parallelism** between stages (each stage can run concurrently). This pattern is fundamental to stream processing, functional programming, and data transformation workflows. In JavaScript, pipelines are implemented via function composition, async iterators, streams, or the proposed pipeline operator (`|>`).
 
 **Core Idea:** 
+
 - **Stages**: Independent processing units (functions).
 - **Flow**: Data flows through stages sequentially.
 - **Composition**: Stages composed into pipeline.
 - **Parallelism**: Different stages process different items concurrently.
 
 **Key Benefits:**
+
 1. **Modularity**: Each stage is independent, testable.
 2. **Composability**: Combine stages to build pipelines.
 3. **Parallelism**: Pipeline stages run concurrently.
@@ -35195,11 +35436,13 @@ Input → Stage 1 → Stage 2 → Stage 3 → Output
  ```
 
 **Without Pipeline:** 
+
 - Nested function calls (unreadable).
 - Hard to reuse transformation sequences.
 - No parallelism between stages.
 
 **With Pipeline:** 
+
 - Linear, left-to-right flow (readable).
 - Composable, reusable stages.
 - Parallel stage execution.
@@ -36042,11 +36285,13 @@ source.start();
 ### Performance Characteristics
 
 **Time Complexity:**
+
 - **Sequential Pipeline**: O(n × m) where n = items, m = stages
 - **Parallel Pipeline**: O(n/k × m) where k = parallelism factor
 - **Stage Complexity**: Depends on individual stage operations
 
 **Space Complexity:**
+
 - **Unbuffered**: O(1) - process one item at a time
 - **Buffered**: O(b × m) - b = buffer size per stage
 - **Full Materialization**: O(n × m) - store all intermediate results
@@ -36305,12 +36550,14 @@ Pipeline: ~n items / max(t1, t2, ..., tm) [with buffering]
 The **Signal Pattern** is a reactive state management pattern where **state changes automatically propagate** to dependent computations. Signals are **fine-grained reactive primitives** that track dependencies and update only affected parts of the system when state changes. This pattern eliminates manual subscription management and enables **automatic, efficient reactivity**. Popularized by frameworks like SolidJS, Preact Signals, Vue 3 (refs), and Angular Signals.
 
 **Core Idea:** 
+
 - **Signal**: Reactive value container (like a cell in a spreadsheet).
 - **Computed**: Derived value that auto-updates when dependencies change.
 - **Effect**: Side effect that auto-runs when dependencies change.
 - **Automatic Tracking**: System tracks which computeds/effects depend on which signals.
 
 **Key Benefits:**
+
 1. **Fine-Grained Reactivity**: Only affected components update.
 2. **Automatic Dependency Tracking**: No manual subscriptions.
 3. **Minimal Re-renders**: Update specific DOM nodes, not entire components.
@@ -36354,11 +36601,13 @@ Signal (state) > DOM Update
  ```
 
 **Without Signal:** 
+
 - Manual subscription management.
 - Coarse-grained updates (entire components).
 - Explicit dependency arrays.
 
 **With Signal:** 
+
 - Automatic subscription (effects track their dependencies).
 - Fine-grained updates (specific computeds/effects).
 - Implicit dependency tracking.
@@ -37373,12 +37622,14 @@ createEffect(() => {
 ### Performance Characteristics
 
 **Time Complexity:**
+
 - **Read (get)**: O(1) - Direct value access
 - **Write (set)**: O(n) where n = number of subscribers
 - **Computed evaluation**: O(1) with memoization (cached)
 - **Effect execution**: O(1) per effect
 
 **Space Complexity:**
+
 - **Per Signal**: O(s) where s = number of subscribers
 - **Per Computed**: O(d) where d = number of dependencies
 - **Dependency Graph**: O(n + e) where n = nodes, e = edges
@@ -37616,12 +37867,14 @@ Example:
 The **Module Pattern** is a JavaScript idiom that encapsulates private and public members using **closures** and **IIFEs (Immediately Invoked Function Expressions)**. It creates a **private scope** for variables and functions while exposing a **public API**. This pattern was essential before ES6 modules, providing namespacing, information hiding, and organized code structure. Still relevant for understanding legacy code and closure-based encapsulation.
 
 **Core Idea:** 
+
 - **IIFE**: Creates private scope immediately.
 - **Closure**: Inner functions access outer scope variables.
 - **Return Object**: Exposes public API.
 - **Private Members**: Variables/functions not returned remain private.
 
 **Key Benefits:**
+
 1. **Encapsulation**: Private state and methods.
 2. **Namespace**: Avoid global pollution.
 3. **Organization**: Logical code grouping.
@@ -37668,11 +37921,13 @@ IIFE (creates private scope)
  ```
 
 **Without Module:** 
+
 - Global namespace pollution.
 - No true privacy.
 - Naming conflicts.
 
 **With Module:** 
+
 - Private scope via closure.
 - Public API controlled.
 - Clean namespace.
@@ -38708,11 +38963,13 @@ features.toggle('new-ui'); // Toggle feature
 ### Performance Characteristics
 
 **Time Complexity:**
+
 - **Module Creation**: O(1) - IIFE executes once
 - **Method Call**: O(1) - Direct property access
 - **Closure Access**: O(1) - Lexical scope lookup
 
 **Space Complexity:**
+
 - **Per Module**: O(n) where n = number of private variables
 - **Closure Memory**: O(m) where m = number of public methods (all share same outer scope)
 
@@ -38990,12 +39247,14 @@ const module1 = (function() {
 The **Revealing Module Pattern** is a variation of the Module Pattern that emphasizes **consistency** and **readability** by defining all functions and variables as **private**, then explicitly **revealing** (exposing) selected members via an object literal at the end. This pattern provides a cleaner separation between private and public interfaces and makes it easy to see which members are exposed.
 
 **Core Idea:** 
+
 - **All members defined normally** (not inside return object).
 - **All members are private** by default.
 - **Return object maps public names to private functions**.
 - **Public interface revealed at bottom** of module.
 
 **Key Benefits:**
+
 1. **Clarity**: Clear view of public API at bottom.
 2. **Consistency**: All functions defined same way (private).
 3. **Aliasing**: Can expose with different names.
@@ -39052,11 +39311,13 @@ IIFE
  ```
 
 **Without Revealing Module:** 
+
 - Mixed definition styles.
 - Public API scattered in return object.
 - Self-references require `this`.
 
 **With Revealing Module:** 
+
 - Consistent function definitions.
 - Public API clearly revealed at bottom.
 - Functions call each other directly (no `this`).
@@ -40352,6 +40613,7 @@ const featureFlags = (function() {
 ### Performance Characteristics
 
 **Identical to Module Pattern:**
+
 - **Time**: O(1) for method calls
 - **Space**: O(n) for private variables
 - **Memory**: Same closure overhead
@@ -40416,6 +40678,7 @@ const featureFlags = (function() {
 ### Disadvantages
 
 **Same as Module Pattern:**
+
 - Cannot extend after creation
 - Testing private functions difficult
 - Memory overhead (closure retains scope)
@@ -40524,12 +40787,14 @@ module.method(); // Logs: "original" (not "modified")
 The **Mixin Pattern** is a JavaScript idiom for **code reuse** through **composition** rather than inheritance. A **mixin** is an object or function that provides methods/properties that can be **mixed into** other objects or classes. This pattern enables **multiple inheritance** simulation and **behavior sharing** across unrelated classes without rigid hierarchies.
 
 **Core Idea:** 
+
 - **Mixin**: Reusable set of methods/properties.
 - **Mix into target**: Copy mixin members to target object/prototype.
 - **Composition**: Build objects from multiple mixins.
 - **No inheritance**: Flat structure, no parent-child relationship.
 
 **Key Benefits:**
+
 1. **Code Reuse**: Share behavior across classes.
 2. **Composition**: Combine multiple mixins flexibly.
 3. **Avoid Diamond Problem**: No inheritance conflicts.
@@ -40590,11 +40855,13 @@ Mixin A Mixin B Mixin C
  ```
 
 **Without Mixin:** 
+
 - Duplicate code across classes.
 - Single inheritance limitation.
 - Rigid hierarchies.
 
 **With Mixin:** 
+
 - Reuse code via composition.
 - Mix multiple behaviors into one class.
 - Flexible, flat structure.
@@ -41570,11 +41837,13 @@ export default {
 ### Performance Characteristics
 
 **Time Complexity:**
+
 - **Mixin Application**: O(n) where n = number of properties copied
 - **Method Call**: O(1) - Direct property access
 - **Multiple Mixins**: O(n × m) where n = mixins, m = properties per mixin
 
 **Space Complexity:**
+
 - **Per Object**: O(p) where p = total properties from all mixins
 - **Shared Methods**: Methods on prototype shared across instances
 
@@ -41809,12 +42078,14 @@ Object.assign(Constructor.prototype, mixin); // Methods shared
 **Functional Composition** is a fundamental functional programming technique where **multiple functions are combined** to create a new function. The output of one function becomes the input of the next, forming a **pipeline** or **chain** of transformations. Composition enables **declarative**, **reusable**, and **testable** code by building complex operations from simple, pure functions.
 
 **Core Idea:** 
+
 - **Combine functions**: f(g(x)) → compose(f, g)(x)
 - **Right-to-left** (mathematical) or **left-to-right** (pipe) execution.
 - **Pure functions**: Easier to compose (no side effects).
 - **Data flow**: Clear transformation pipeline.
 
 **Key Benefits:**
+
 1. **Reusability**: Small functions, many combinations.
 2. **Readability**: Clear data flow.
 3. **Testability**: Test small functions independently.
@@ -41864,11 +42135,13 @@ pipe(f, g, h)(x) = h(g(f(x)))
  ```
 
 **Without Composition:** 
+
 - Nested calls or temp variables.
 - Hard to reuse transformation sequences.
 - Less declarative.
 
 **With Composition:** 
+
 - Clear pipeline.
 - Reusable composed functions.
 - Declarative, readable.
@@ -42517,11 +42790,13 @@ function SearchComponent() {
 ### Performance Characteristics
 
 **Time Complexity:**
+
 - **Composition Creation**: O(n) where n = number of functions
 - **Execution**: O(n) - each function called once
 - **Overhead**: Minimal (function call stack)
 
 **Space Complexity:**
+
 - **Closure**: O(n) - composed function holds reference to all functions
 - **Execution**: O(d) where d = max call stack depth
 
@@ -42810,6 +43085,7 @@ fn3(fn2(fn1(x)));
 ```
 
 **Key Benefits:**
+
 1. **Function Specialization**: Create specific versions of general functions.
 2. **Reusability**: Reuse partially applied functions.
 3. **Composition**: Easier to compose unary functions.
@@ -42861,11 +43137,13 @@ add(a, b, c) + partial(10, 20) → add(10, 20, c)
  ```
 
 **Without Currying/Partial:** 
+
 - Repeat arguments.
 - Cannot create specialized versions easily.
 - Hard to compose.
 
 **With Currying/Partial:** 
+
 - Pre-configure some arguments.
 - Create specialized, reusable functions.
 - Easy composition (unary functions).
@@ -43174,12 +43452,14 @@ document.querySelectorAll('.item').forEach(setClassActive);
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - Reusable specialized functions
 - Cleaner composition
 - Configuration flexibility
 - Point-free style
 
 **Disadvantages:**
+
 - Learning curve
 - Debugging complexity (nested closures)
 - Slight performance overhead (function wrapping)
@@ -43221,12 +43501,14 @@ document.querySelectorAll('.item').forEach(setClassActive);
 The **Null Object Pattern** is a behavioral design pattern that uses a **special null object** with neutral behavior instead of `null` or `undefined` references. This object provides default "do nothing" implementations of expected methods, eliminating `null` checks and preventing **NullPointerException** errors. It simplifies code by making null cases transparent.
 
 **Core Idea:** 
+
 - **Null object**: Implements same interface as real object.
 - **Neutral behavior**: Methods do nothing or return safe defaults.
 - **No null checks**: Client code doesn't check for `null`.
 - **Polymorphism**: Null object and real object treated uniformly.
 
 **Key Benefits:**
+
 1. **Eliminates Null Checks**: No if (obj !== null) everywhere.
 2. **Prevents Errors**: No "Cannot read property of null" errors.
 3. **Simplifies Code**: Cleaner, less defensive programming.
@@ -43279,11 +43561,13 @@ Client uses either without null checks
  ```
 
 **Without Null Object:** 
+
 - Null checks everywhere.
 - Risk of null reference errors.
 - Default behavior duplicated.
 
 **With Null Object:** 
+
 - No null checks needed.
 - Safe default behavior.
 - Cleaner, uniform code.
@@ -43703,12 +43987,14 @@ Strategy (interchangeable), Proxy (wrapper), Special Case (subcategory of Null O
 **Micro-Frontend** is an architectural pattern that extends microservices principles to frontend development, decomposing a monolithic frontend into **smaller, independent applications** that are composed at runtime. Each micro-frontend is developed, tested, and deployed **independently** by autonomous teams, enabling **scalability**, **team autonomy**, and **technology diversity**.
 
 **Core Idea:** 
+
 - **Independent frontends**: Separate apps for different features/domains.
 - **Team ownership**: Each team owns a micro-frontend end-to-end.
 - **Runtime integration**: Composed in browser or edge (not build-time).
 - **Technology agnostic**: Different frameworks per micro-frontend.
 
 **Key Benefits:**
+
 1. **Team Autonomy**: Teams work independently.
 2. **Technology Diversity**: Mix React, Vue, Angular, etc.
 3. **Incremental Upgrades**: Update one micro-frontend at a time.
@@ -43733,11 +44019,13 @@ Shell App (Container)
 4. **Slow Deployments**: Must deploy entire app for small changes.
 
 **Without Micro-Frontends:** 
+
 - Monolithic frontend.
 - Team dependencies.
 - Technology constraints.
 
 **With Micro-Frontends:** 
+
 - Independent deployments.
 - Team autonomy.
 - Technology flexibility.
@@ -43934,12 +44222,14 @@ document.addEventListener('checkout-complete', (e) => {
 **Service Locator** is an architectural pattern that provides a **central registry** for obtaining service instances without directly instantiating them. It acts as a **lookup mechanism** where components request services by name/type rather than creating dependencies themselves. This pattern decouples service consumers from concrete implementations.
 
 **Core Idea:** 
+
 - **Central registry**: Store/retrieve services.
 - **Lookup by name/type**: Request service without knowing implementation.
 - **Lazy initialization**: Create services on-demand.
 - **Singleton/factory**: Manage service lifecycles.
 
 **Key Benefits:**
+
 1. **Decoupling**: Consumers don't know implementation details.
 2. **Flexibility**: Swap implementations easily.
 3. **Centralized Management**: Single place for service configuration.
@@ -44071,12 +44361,14 @@ class Controller {
 **Dependency Injection (DI)** is an architectural pattern where dependencies are **provided to** (injected into) a component rather than the component creating them itself. This inverts the dependency creation responsibility, promoting **loose coupling**, **testability**, and **flexibility**. DI is a key principle of SOLID (Dependency Inversion Principle).
 
 **Core Idea:** 
+
 - **Inject dependencies**: Pass dependencies to constructor/method.
 - **Inversion of Control**: Framework/injector creates dependencies.
 - **Decouple creation from usage**: Components use, don't create.
 - **Configuration external**: Dependency wiring outside components.
 
 **Key Benefits:**
+
 1. **Testability**: Easy to inject mocks/stubs.
 2. **Loose Coupling**: Components don't know concrete implementations.
 3. **Flexibility**: Swap implementations without changing code.
@@ -44264,12 +44556,14 @@ controller.setLogger(new Logger());
 **Virtual DOM (VDOM)** is a programming pattern where a lightweight **JavaScript representation** of the actual DOM is maintained in memory. Changes are first applied to the virtual DOM, then a **diff algorithm** calculates the minimal set of changes needed, and finally a **patch** updates the real DOM efficiently. This pattern is fundamental to React, Vue, and other modern frameworks.
 
 **Core Idea:** 
+
 - **Virtual representation**: JavaScript objects mirror DOM structure.
 - **Diff algorithm**: Compare old and new VDOM trees.
 - **Patch**: Apply minimal changes to real DOM.
 - **Performance**: Batch updates, minimize reflows.
 
 **Key Benefits:**
+
 1. **Performance**: Minimize expensive DOM operations.
 2. **Declarative**: Describe UI state, framework handles updates.
 3. **Cross-Platform**: Same VDOM can target different renderers.
@@ -44488,18 +44782,21 @@ function patch(parent, patches, index = 0) {
 The **Mutation Observer Pattern** uses the browser's `MutationObserver` API to **asynchronously observe changes** to the DOM tree. Unlike the deprecated Mutation Events (which were synchronous and caused performance problems), MutationObserver provides an efficient, batched mechanism to react to DOM modifications. This pattern is fundamental for building reactive UIs, custom elements, content monitoring, and browser extensions.
 
 **Core Idea:** 
+
 - **Observe DOM changes**: Monitor elements for modifications.
 - **Async batched callbacks**: Changes queued and delivered asynchronously.
 - **Fine-grained control**: Observe specific types of mutations.
 - **Performance**: No synchronous event overhead.
 
 **Key Benefits:**
+
 1. **Performance**: Batched, async delivery of changes.
 2. **Precision**: Configure what types of changes to observe.
 3. **Reactive UI**: Auto-update when DOM changes.
 4. **No Polling**: Efficient compared to manual checking.
 
 **Observable Changes:**
+
 - **Attributes**: Class, style, data attributes, etc.
 - **ChildList**: Nodes added/removed.
 - **CharacterData**: Text content changes.
@@ -44529,11 +44826,13 @@ The **Mutation Observer Pattern** uses the browser's `MutationObserver` API to *
 3. **Cannot Detect Dynamic Content**: Hard to know when content loaded.
 
 **Without Mutation Observer:** 
+
 - Polling (inefficient).
 - Deprecated mutation events.
 - Manual tracking.
 
 **With Mutation Observer:** 
+
 - Efficient async notification.
 - Precise change detection.
 - Automatic reactivity.
@@ -45006,6 +45305,7 @@ source.querySelector('h1').textContent = 'Updated';
 
 **Summary:** 
 Mutation Observer is extensively used in:
+
 - **Custom Elements**: Lifecycle management (connectedCallback, disconnectedCallback)
 - **Browser Extensions**: Content script DOM monitoring
 - **SPA Frameworks**: Change detection, virtual DOM reconciliation
@@ -45036,18 +45336,21 @@ observer.observe(document.body, { childList: true, subtree: true });
 ## Performance & Trade-offs
 
 **Advantages:**
+
 - Async batched delivery (no sync overhead)
 - Precise control over what to observe
 - Better than polling or deprecated Mutation Events
 - Low memory footprint
 
 **Disadvantages:**
+
 - Async delay (not immediate)
 - Can't prevent mutations (only observe)
 - Complex configuration options
 - Memory leaks if not disconnected
 
 **Performance:**
+
 - Time: O(n) where n = number of mutations
 - Space: O(m) where m = mutation records queued
 - Batching reduces callback frequency significantly
@@ -45088,12 +45391,14 @@ observer.observe(document.body, { childList: true, subtree: true });
 **Event Delegation** leverages event **bubbling** to handle events at a parent level rather than attaching listeners to every child element. A single event listener on a parent can handle events from all descendants, dramatically reducing memory usage and enabling dynamic element handling. This is a fundamental pattern for efficient DOM event management in SPAs.
 
 **Core Idea:** 
+
 - **Single listener on parent**: Instead of many on children
 - **Event bubbling**: Events propagate up DOM tree
 - **`event.target`**: Identify actual clicked element
 - **Dynamic elements**: Works for elements added later
 
 **Key Benefits:**
+
 1. **Memory Efficient**: One listener instead of hundreds
 2. **Dynamic Content**: Automatically handles new elements
 3. **Performance**: Faster attachment, less memory
@@ -45160,11 +45465,13 @@ delegator.on('.edit-btn', (e) => console.log('Edit:', e.target));
 ## Performance & Use Cases
 
 **Performance:**
+
 - Memory: O(1) vs O(n) for individual listeners
 - Attachment: O(1) vs O(n)
 - Best for: Lists, tables, grids, toolbars
 
 **Real-world:**
+
 - Todo lists, data tables, navigation menus
 - React's synthetic event system uses delegation
 - jQuery `$(parent).on('click', '.child', handler)`
@@ -45263,6 +45570,7 @@ channel.close();
 **Fiber Tree** (React Fiber) is React's incremental rendering architecture. It breaks rendering work into **chunks** that can be interrupted, enabling concurrent rendering, time-slicing, and prioritization.
 
 **Core Concepts:**
+
 - **Fiber Node**: Lightweight unit of work
 - **Work Loop**: Interruptible rendering
 - **Priority Levels**: Urgent vs low-priority updates
@@ -45322,6 +45630,7 @@ requestIdleCallback(workLoop);
 **Conflict-free Replicated Data Types (CRDTs)** are data structures that automatically **merge concurrent changes** without conflicts. Essential for real-time collaboration and offline-first apps.
 
 **Types:**
+
 - **Op-based CRDTs**: Replicate operations
 - **State-based CRDTs**: Replicate full state
 - **G-Counter**: Grow-only counter
@@ -45526,6 +45835,7 @@ console.log(user.verifyPassword('secret')); // true
 **Documentation Status: 59/59 Patterns Complete**
 
 All patterns now include:
+
 - Concept overviews
 - Problem statements 
 - Detailed implementations
@@ -45537,6 +45847,7 @@ All patterns now include:
 - Architecture diagrams (where applicable)
 
 **All Pattern Categories 100% Complete:**
+
 - Creational Patterns (7/7) - Complete with diagrams
 - Structural Patterns (7/7) - Complete with diagrams
 - Behavioral Patterns (12/12) - Complete with diagrams
@@ -45548,6 +45859,7 @@ All patterns now include:
 **Total: 59/59 Patterns - 100% Complete**
 
 Each pattern includes:
+
 - Concept Overview & Problem Statement
 - Detailed Implementation (ESNext code)
 - Browser/DOM Usage Examples
@@ -45558,11 +45870,13 @@ Each pattern includes:
 - RFC-style Summary Table
 
 **Diagram Assets:**
+
 - 47 Python diagram generation scripts (`build/diagrams/`)
 - 52 High-quality PNG diagrams (`docs/images/`)
 - All diagrams at 300 DPI resolution
 
 **Documentation Metrics:**
+
 - Total Lines: 60,082
 - Total Patterns: 59
 - Total Diagram Code: ~360,000 characters
